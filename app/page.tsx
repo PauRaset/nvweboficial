@@ -17,22 +17,24 @@ function Iphone() {
   const texture2 = useTexture('/2.jpg'); 
   const texture3 = useTexture('/3.jpg');
 
-  // --- AJUSTE DE TEXTURA (AQUÍ ESTÁ LA MAGIA) ---
+  // --- AJUSTE DE TEXTURA (CORREGIDO) ---
   [texture1, texture2, texture3].forEach(t => {
+    // 1. Orientación: Al ponerlo en false, evitamos que salga "patas arriba"
     t.flipY = false; 
     t.colorSpace = THREE.SRGBColorSpace;
     
-    // 1. CENTRAMOS la textura para poder girarla desde el medio
+    // 2. ROTACIÓN: La ponemos en 0. (Antes estaba girada y por eso se estiraba)
     t.center.set(0.5, 0.5);
+    t.rotation = 0; 
 
-    // 2. ROTACIÓN: Probamos girarla -90 grados (suele arreglar lo de "estirado de lado")
-    // Si se ve tumbada, cambia esto a 0 o Math.PI
-    t.rotation = -Math.PI / 2; 
-
-    // 3. ESCALA (REPEAT): Ajusta estos números si la imagen se ve muy grande (zoom) o pequeña
-    // [X, Y]. Si pones números mayores a 1, la imagen se hace más pequeña (se repite).
-    // Si pones números menores (0.9), se hace más grande (zoom in).
+    // 3. ESCALA: 1, 1 es el tamaño natural.
     t.repeat.set(1, 1); 
+    
+    // 4. CALIDAD (Antialiasing): Esto evita que se vea borrosa o con "dientes de sierra"
+    t.generateMipmaps = true;
+    t.minFilter = THREE.LinearMipMapLinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.anisotropy = 16; // Máxima nitidez en ángulos inclinados
   });
 
   useEffect(() => {
@@ -48,7 +50,6 @@ function Iphone() {
 
       // --- MODO PANTALLA LED ---
       Object.values(nodes).forEach((node: any) => {
-        // Buscamos la pantalla (incluyendo 'glass', 'body_2', etc.)
         if (node.isMesh && (
             node.name.toLowerCase().includes('screen') || 
             node.name.toLowerCase().includes('display') || 
@@ -63,7 +64,6 @@ function Iphone() {
                 });
              }
              
-             // Actualizamos la textura
              node.material.map = activeTexture;
              node.material.needsUpdate = true;
         }
@@ -82,9 +82,9 @@ function Iphone() {
         <primitive object={scene} scale={0.01} /> 
       </Center>
       
-      {/* Lista de debug (puedes quitarla si molesta borrando este bloque Html) */}
+      {/* Puedes borrar esto cuando ya se vea perfecto */}
       <Html position={[20, 0, 0]} center>
-         <div className="bg-white p-2 text-xs">Debug Mode</div>
+         <div className="bg-white p-2 text-xs">Ajustando Textura...</div>
       </Html>
     </group>
   );
