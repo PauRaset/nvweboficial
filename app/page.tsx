@@ -17,24 +17,13 @@ function Iphone() {
   const texture2 = useTexture('/2.jpg'); 
   const texture3 = useTexture('/3.jpg');
 
-  // --- AJUSTE DE TEXTURA (CORREGIDO) ---
+  // --- CONFIGURACIÓN DE TEXTURA ---
   [texture1, texture2, texture3].forEach(t => {
-    // 1. Orientación: Al ponerlo en false, evitamos que salga "patas arriba"
     t.flipY = false; 
     t.colorSpace = THREE.SRGBColorSpace;
-    
-    // 2. ROTACIÓN: La ponemos en 0. (Antes estaba girada y por eso se estiraba)
     t.center.set(0.5, 0.5);
-    t.rotation = 0; 
-
-    // 3. ESCALA: 1, 1 es el tamaño natural.
+    t.rotation = 0; // Empezamos sin rotación
     t.repeat.set(1, 1); 
-    
-    // 4. CALIDAD (Antialiasing): Esto evita que se vea borrosa o con "dientes de sierra"
-    t.generateMipmaps = true;
-    t.minFilter = THREE.LinearMipMapLinearFilter;
-    t.magFilter = THREE.LinearFilter;
-    t.anisotropy = 16; // Máxima nitidez en ángulos inclinados
   });
 
   useEffect(() => {
@@ -50,13 +39,11 @@ function Iphone() {
 
       // --- MODO PANTALLA LED ---
       Object.values(nodes).forEach((node: any) => {
-        if (node.isMesh && (
-            node.name.toLowerCase().includes('screen') || 
-            node.name.toLowerCase().includes('display') || 
-            node.name.toLowerCase().includes('glass') ||
-            node.name.toLowerCase().includes('body_2')
-           )) {
+        // AQUÍ ESTABA EL ERROR: Antes seleccionábamos el cristal ('glass')
+        // Ahora seleccionamos EXCLUSIVAMENTE la pantalla plana: 'scr'
+        if (node.isMesh && node.name === 'object010_scr_0') {
              
+             // Convertimos el material a luz sólida si no lo es ya
              if (!(node.material instanceof THREE.MeshBasicMaterial)) {
                 node.material = new THREE.MeshBasicMaterial({
                   map: activeTexture,
@@ -82,9 +69,11 @@ function Iphone() {
         <primitive object={scene} scale={0.01} /> 
       </Center>
       
-      {/* Puedes borrar esto cuando ya se vea perfecto */}
+      {/* Debug: Muestra si estamos encontrando la pieza */}
       <Html position={[20, 0, 0]} center>
-         <div className="bg-white p-2 text-xs">Ajustando Textura...</div>
+         <div className="bg-white p-2 text-xs">
+           Target: object010_scr_0
+         </div>
       </Html>
     </group>
   );
