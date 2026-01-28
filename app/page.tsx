@@ -33,7 +33,7 @@ function Iphone() {
     <group ref={groupRef} rotation-x={Math.PI / 2}>
       <Center>
         {/* ESCALA REDUCIDA: 0.08 para hacerlo más pequeño */}
-        <primitive object={scene} scale={0.08} /> 
+        <primitive object={scene} scale={0.05} /> 
       </Center>
     </group>
   );
