@@ -1,65 +1,66 @@
-import Image from "next/image";
+'use client';
+
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF, Environment, ContactShadows, Float, Html } from '@react-three/drei';
+import { useRef } from 'react';
+import { Mesh } from 'three';
+
+// --- CONFIGURACIÓN ---
+// Usamos un modelo alojado en la nube para empezar rápido
+const MODEL_URL = "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/iphone-x/model.gltf";
+
+function Iphone() {
+  const { scene } = useGLTF(MODEL_URL);
+  const phoneRef = useRef<Mesh>(null);
+
+  useFrame((state) => {
+    // Animación suave de "flotación" y rotación inicial
+    if (phoneRef.current) {
+      const t = state.clock.getElapsedTime();
+      phoneRef.current.rotation.y = -Math.PI / 2 + Math.sin(t / 2) * 0.3; // Gira suave
+      phoneRef.current.position.y = Math.sin(t) * 0.1; // Flota arriba/abajo
+    }
+  });
+
+  return (
+    <group ref={phoneRef} position={[0, 0, 0]}>
+      {/* El modelo 3D */}
+      <primitive object={scene} scale={3} />
+      
+      {/* Aquí pondremos la pantalla de la App más adelante */}
+      {/* <Html ... /> */}
+    </group>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="relative w-full h-screen bg-black overflow-hidden">
+      
+      {/* CAPA 3D (Fondo) */}
+      <div className="absolute inset-0 z-0">
+        <Canvas camera={{ position: [0, 0, 6], fov: 45 }}>
+          <ambientLight intensity={0.5} />
+          <Environment preset="city" /> {/* Reflejos realistas */}
+          
+          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+            <Iphone />
+          </Float>
+          
+          <ContactShadows position={[0, -2, 0]} opacity={0.6} scale={10} blur={2} />
+        </Canvas>
+      </div>
+
+      {/* CAPA HTML (Texto por encima) */}
+      <div className="relative z-10 flex flex-col items-center justify-center h-full pointer-events-none">
+        <h1 className="text-7xl md:text-9xl font-bold tracking-tighter text-white mix-blend-difference">
+          NightVibe
+        </h1>
+        <p className="mt-4 text-xl text-gray-400 font-light tracking-widest uppercase">
+          Descubre la noche
+        </p>
+      </div>
+
+    </main>
   );
 }
