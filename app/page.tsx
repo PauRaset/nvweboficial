@@ -11,19 +11,28 @@ function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
-  
-  // Estado para la lista de nombres (seguimos mostrando la lista por si acaso)
   const [nombresPiezas, setNombresPiezas] = useState<string[]>([]);
 
-  // CARGA DE IMÁGENES
   const texture1 = useTexture('/1.jpg'); 
   const texture2 = useTexture('/2.jpg'); 
   const texture3 = useTexture('/3.jpg');
 
-  // CONFIGURACIÓN DE IMÁGENES (Evita que se vean grisáceas)
+  // --- AJUSTE DE TEXTURA (AQUÍ ESTÁ LA MAGIA) ---
   [texture1, texture2, texture3].forEach(t => {
-    t.flipY = false;
+    t.flipY = false; 
     t.colorSpace = THREE.SRGBColorSpace;
+    
+    // 1. CENTRAMOS la textura para poder girarla desde el medio
+    t.center.set(0.5, 0.5);
+
+    // 2. ROTACIÓN: Probamos girarla -90 grados (suele arreglar lo de "estirado de lado")
+    // Si se ve tumbada, cambia esto a 0 o Math.PI
+    t.rotation = -Math.PI / 2; 
+
+    // 3. ESCALA (REPEAT): Ajusta estos números si la imagen se ve muy grande (zoom) o pequeña
+    // [X, Y]. Si pones números mayores a 1, la imagen se hace más pequeña (se repite).
+    // Si pones números menores (0.9), se hace más grande (zoom in).
+    t.repeat.set(1, 1); 
   });
 
   useEffect(() => {
@@ -33,31 +42,24 @@ function Iphone() {
   useFrame((state, delta) => {
     if (groupRef.current) {
       const r = scroll.offset; 
-      
-      // Calculamos qué textura toca ahora
       let activeTexture = texture3;
       if (r < 0.33) activeTexture = texture1;
       else if (r < 0.66) activeTexture = texture2;
 
       // --- MODO PANTALLA LED ---
       Object.values(nodes).forEach((node: any) => {
-        // Buscamos cualquier pieza que suene a pantalla
+        // Buscamos la pantalla (incluyendo 'glass', 'body_2', etc.)
         if (node.isMesh && (
             node.name.toLowerCase().includes('screen') || 
             node.name.toLowerCase().includes('display') || 
             node.name.toLowerCase().includes('glass') ||
-            node.name.toLowerCase().includes('body_2') // A veces es body_2
+            node.name.toLowerCase().includes('body_2')
            )) {
              
-             // TRUCO MAESTRO:
-             // En lugar de modificar el material existente (que es cristal),
-             // lo sustituimos por un MeshBasicMaterial (que es luz sólida).
-             
-             // Si el material actual NO es el nuestro, lo cambiamos
              if (!(node.material instanceof THREE.MeshBasicMaterial)) {
                 node.material = new THREE.MeshBasicMaterial({
                   map: activeTexture,
-                  toneMapped: false, // Hace que los colores sean puros
+                  toneMapped: false,
                 });
              }
              
@@ -67,7 +69,6 @@ function Iphone() {
         }
       });
 
-      // MOVIMIENTO
       const targetRotationY = r * Math.PI * 0.5; 
       const targetPosX = r * 1.5; 
       groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 4 * delta);
@@ -80,17 +81,10 @@ function Iphone() {
       <Center>
         <primitive object={scene} scale={0.01} /> 
       </Center>
-
-      {/* LISTA DE DEBUG (Mírala y dime si ves algún nombre raro) */}
+      
+      {/* Lista de debug (puedes quitarla si molesta borrando este bloque Html) */}
       <Html position={[20, 0, 0]} center>
-        <div className="bg-white text-black p-4 text-xs h-64 overflow-auto w-48 border-4 border-red-500 rounded font-mono">
-          <p className="font-bold text-red-600 mb-2">PIEZAS DETECTADAS:</p>
-          <ul>
-            {nombresPiezas.map((nombre) => (
-              <li key={nombre} className="border-b border-gray-200 py-1">{nombre}</li>
-            ))}
-          </ul>
-        </div>
+         <div className="bg-white p-2 text-xs">Debug Mode</div>
       </Html>
     </group>
   );
