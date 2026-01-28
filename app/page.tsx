@@ -26,10 +26,10 @@ function Iphone() {
 
   useFrame((state, delta) => {
     if (groupRef.current) {
-      const r = scroll.offset; // 0 al principio, 1 al final
+      const r = scroll.offset; 
       
-      // --- LÓGICA DE TEXTURAS (SINCRONIZADA CON LA ESPALDA) ---
-      // Cambiamos la imagen justo cuando el móvil nos da la espalda (180 grados y 540 grados)
+      // --- CAMBIO DE TEXTURAS ---
+      // Sincronizado para ocurrir cuando la rotación Z llegue a 180º (0.25) y 540º (0.75)
       let activeTexture = texture1;
       if (r >= 0.25 && r < 0.75) activeTexture = texture2;
       else if (r >= 0.75) activeTexture = texture3;
@@ -51,50 +51,46 @@ function Iphone() {
 
       // --- CÁLCULOS DE MOVIMIENTO FÍSICO ---
 
-      // 1. POSICIÓN (ZONAS DE ESTANCIA)
-      // Usamos 'damp' manual para crear zonas donde el móvil se queda quieto
-      // para que el usuario pueda leer.
-      let targetPosX = 1.3; // Zona 1: Derecha
-      
-      // Zona 2: Izquierda (Entre el 30% y el 70% del scroll)
-      if (r > 0.30 && r < 0.70) {
-        targetPosX = -1.3; 
-      } 
-      // Zona 3: Derecha (Al final)
-      if (r >= 0.70) {
-        targetPosX = 1.3; 
-      }
+      // 1. POSICIÓN X (ZONAS DE LECTURA)
+      // Derecha -> Izquierda -> Derecha
+      let targetPosX = 1.3; 
+      if (r > 0.30 && r < 0.70) targetPosX = -1.3; 
+      if (r >= 0.70) targetPosX = 1.3; 
 
-      // 2. POSICIÓN Y (FLOTACIÓN SUAVE)
+      // 2. POSICIÓN Y (FLOTACIÓN)
       const targetPosY = Math.sin(state.clock.elapsedTime) * 0.1;
 
-      // 3. ROTACIÓN Y (EL GIRO SOBRE SÍ MISMO)
-      // r * Math.PI * 4  => 2 Vueltas completas (720 grados)
-      // Esto hace que gire CONSTANTEMENTE mientras bajas.
-      // Al moverse de un lado a otro, verás la parte trasera.
-      const targetRotationY = r * Math.PI * 4;
+      // 3. ROTACIÓN Z (EL GIRO PRINCIPAL) [CORREGIDO]
+      // Al estar el grupo rotado 90º en X, el eje Z local es el vertical del mundo.
+      // Hacemos que gire 2 vueltas completas (4 PI) a lo largo del scroll.
+      // Sumamos -0.2 para que empiece un pelín girado hacia el centro.
+      const targetRotationZ = -0.2 + (r * Math.PI * 4);
 
       // 4. ROTACIÓN X (SIEMPRE DE PIE)
-      // Math.PI / 2 es 90 grados exactos (vertical perfecto).
+      // Lo fijamos a 90 grados exactos.
       const targetRotationX = Math.PI / 2;
       
-      // 5. ROTACIÓN Z (INERCIA DEL EMPUJÓN)
-      // Cuando el móvil se mueve lateralmente, se inclina un poco como un coche tomando una curva.
-      // Calculamos la velocidad a la que se mueve hacia el objetivo
+      // 5. ROTACIÓN Y (INERCIA / BALANCEO) [CORREGIDO]
+      // Ahora el eje Y local es el que controla la inclinación lateral ("Barrel roll").
+      // Usamos esto para el efecto "empujón": se inclina hacia donde se mueve.
       const dist = targetPosX - groupRef.current.position.x;
-      const targetRotationZ = dist * 0.1; // Se inclina según la dirección del movimiento
+      const targetRotationY = dist * 0.05; // Factor suave de inclinación
 
-      // --- APLICACIÓN DE FÍSICAS (LERP) ---
-      // Usamos 4 * delta para que el movimiento sea fluido pero responsivo
+      // --- APLICACIÓN DE FÍSICAS ---
+      // Lerp suave para todo
       groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, 4 * delta);
       groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 4 * delta);
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 4 * delta);
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, 4 * delta);
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, 4 * delta);
+      
+      // ¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE DE EJES!
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, 4 * delta); // Giro vertical
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, 4 * delta); // De pie
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 4 * delta); // Inercia
     }
   });
 
   return (
+    // Quitamos la rotación inicial del prop para controlarla 100% en el useFrame
+    // O la dejamos como base, pero el useFrame mandará.
     <group ref={groupRef} rotation-x={Math.PI / 2}>
       <Center>
         <primitive object={scene} scale={0.01} /> 
@@ -113,20 +109,19 @@ export default function Home() {
           
           <Suspense fallback={null}>
             <ScrollControls pages={3} damping={0.4}>
-               {/* iPhone */}
                <Iphone />
                
                <Scroll html style={{ width: '100%', height: '100%' }}>
                   <div className="w-screen px-8">
                     
-                    {/* SECCIÓN 1: Texto a la Izquierda */}
+                    {/* SECCIÓN 1 */}
                     <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
                       <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
                       <p className="text-xl text-gray-400">La noche cobra vida.</p>
                       <p className="text-sm mt-10 animate-bounce">▼ Haz Scroll</p>
                     </section>
                     
-                    {/* SECCIÓN 2: Texto a la Derecha */}
+                    {/* SECCIÓN 2 */}
                     <section className="h-screen flex flex-col justify-center items-end text-right text-white">
                       <h2 className="text-5xl font-bold mb-4">Conecta</h2>
                       <p className="text-xl text-gray-400 max-w-md">
@@ -134,7 +129,7 @@ export default function Home() {
                       </p>
                     </section>
                     
-                    {/* SECCIÓN 3: Texto a la Izquierda */}
+                    {/* SECCIÓN 3 */}
                     <section className="h-screen flex flex-col justify-center items-start text-left text-white">
                       <h2 className="text-6xl font-bold mb-6">Descárgala hoy</h2>
                       <p className="text-xl text-gray-400 mb-6 max-w-md">
