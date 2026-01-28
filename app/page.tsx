@@ -12,7 +12,7 @@ function Iphone() {
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
   
-  // Estado para ver qué piezas existen
+  // Estado para la lista de nombres (seguimos mostrando la lista por si acaso)
   const [nombresPiezas, setNombresPiezas] = useState<string[]>([]);
 
   // CARGA DE IMÁGENES
@@ -20,36 +20,50 @@ function Iphone() {
   const texture2 = useTexture('/2.jpg'); 
   const texture3 = useTexture('/3.jpg');
 
+  // CONFIGURACIÓN DE IMÁGENES (Evita que se vean grisáceas)
   [texture1, texture2, texture3].forEach(t => {
     t.flipY = false;
     t.colorSpace = THREE.SRGBColorSpace;
   });
 
   useEffect(() => {
-    // Guardamos los nombres para la lista
     setNombresPiezas(Object.keys(nodes));
   }, [nodes]);
 
   useFrame((state, delta) => {
     if (groupRef.current) {
       const r = scroll.offset; 
+      
+      // Calculamos qué textura toca ahora
+      let activeTexture = texture3;
+      if (r < 0.33) activeTexture = texture1;
+      else if (r < 0.66) activeTexture = texture2;
 
-      // --- MODO NUCLEAR: PINTAR TODO ---
-      // Recorremos TODAS las piezas del modelo.
+      // --- MODO PANTALLA LED ---
       Object.values(nodes).forEach((node: any) => {
-        // Si es una malla (Mesh) y tiene material...
-        if (node.isMesh && node.material) {
-          
-          // Detectamos si es un material único o una lista
-          const material = Array.isArray(node.material) ? node.material[0] : node.material;
-          
-          // LE FORZAMOS LA TEXTURA (Da igual si es la pantalla o el botón de volumen)
-          if (material && 'map' in material) {
-             if (r < 0.33) material.map = texture1;
-             else if (r < 0.66) material.map = texture2;
-             else material.map = texture3;
-             material.needsUpdate = true;
-          }
+        // Buscamos cualquier pieza que suene a pantalla
+        if (node.isMesh && (
+            node.name.toLowerCase().includes('screen') || 
+            node.name.toLowerCase().includes('display') || 
+            node.name.toLowerCase().includes('glass') ||
+            node.name.toLowerCase().includes('body_2') // A veces es body_2
+           )) {
+             
+             // TRUCO MAESTRO:
+             // En lugar de modificar el material existente (que es cristal),
+             // lo sustituimos por un MeshBasicMaterial (que es luz sólida).
+             
+             // Si el material actual NO es el nuestro, lo cambiamos
+             if (!(node.material instanceof THREE.MeshBasicMaterial)) {
+                node.material = new THREE.MeshBasicMaterial({
+                  map: activeTexture,
+                  toneMapped: false, // Hace que los colores sean puros
+                });
+             }
+             
+             // Actualizamos la textura
+             node.material.map = activeTexture;
+             node.material.needsUpdate = true;
         }
       });
 
@@ -67,10 +81,10 @@ function Iphone() {
         <primitive object={scene} scale={0.01} /> 
       </Center>
 
-      {/* SEGUIMOS MOSTRANDO LA LISTA POR SI ACASO */}
+      {/* LISTA DE DEBUG (Mírala y dime si ves algún nombre raro) */}
       <Html position={[20, 0, 0]} center>
         <div className="bg-white text-black p-4 text-xs h-64 overflow-auto w-48 border-4 border-red-500 rounded font-mono">
-          <p className="font-bold text-red-600 mb-2">LISTA DE PIEZAS:</p>
+          <p className="font-bold text-red-600 mb-2">PIEZAS DETECTADAS:</p>
           <ul>
             {nombresPiezas.map((nombre) => (
               <li key={nombre} className="border-b border-gray-200 py-1">{nombre}</li>
