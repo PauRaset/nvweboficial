@@ -7,7 +7,7 @@ import { Mesh } from 'three';
 
 // Usamos este modelo que es el estándar de la industria (iPhone 13 Pro)
 // Es una URL directa a un CDN rápido, así evitamos errores de descarga local
-const MODEL_URL = "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/iphone-13/model.gltf";
+const MODEL_URL = '/iphone.glb';
 
 function Iphone() {
   const { scene } = useGLTF(MODEL_URL);
