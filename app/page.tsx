@@ -1,11 +1,11 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, ContactShadows, Center, Float } from '@react-three/drei';
+import { useGLTF, Environment, Center, Float, OrbitControls } from '@react-three/drei';
 import { useRef } from 'react';
 import { Mesh } from 'three';
 
-// USAMOS TU ARCHIVO LOCAL
+// TU ARCHIVO LOCAL
 const MODEL_PATH = '/iphone.glb';
 
 function Iphone() {
@@ -15,18 +15,16 @@ function Iphone() {
   useFrame((state) => {
     if (phoneRef.current) {
       const t = state.clock.getElapsedTime();
-      // Rotación suave para que se vea por todos lados
       phoneRef.current.rotation.y = Math.PI + Math.sin(t / 2) * 0.3; 
-      phoneRef.current.position.y = Math.sin(t) * 0.1;
     }
   });
 
   return (
     <group ref={phoneRef}>
-      {/* Center arregla el problema de que se vea cortado o descentrado */}
-      {/* scale={0.1} reduce el tamaño si el modelo original es gigante */}
-      <Center top>
-        <primitive object={scene} scale={0.5} /> 
+      {/* Usamos Center para forzar que esté en medio */}
+      <Center>
+        {/* IMPORTANTE: Reducimos la escala muchísimo (0.01) */}
+        <primitive object={scene} scale={0.01} /> 
       </Center>
     </group>
   );
@@ -36,28 +34,32 @@ export default function Home() {
   return (
     <main className="relative w-full h-screen bg-black overflow-hidden">
       
-      {/* CAPA 3D */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 4], fov: 45 }}>
-          <ambientLight intensity={1.5} />
-          <Environment preset="city" />
+        <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
+          {/* Luces fuertes para ver bien */}
+          <ambientLight intensity={3} />
+          <spotLight position={[10, 10, 10]} intensity={2} />
+          <Environment preset="studio" />
           
           <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
              <Iphone />
           </Float>
+
+          {/* Caja roja de referencia en el centro exacto (0,0,0) */}
+          {/* Si ves la caja roja pero no el iPhone, es que el iPhone sigue siendo enorme o invisible */}
+          <mesh position={[0,0,0]}>
+            <boxGeometry args={[0.5, 0.5, 0.5]} />
+            <meshStandardMaterial color="red" wireframe />
+          </mesh>
           
-          <ContactShadows position={[0, -1.5, 0]} opacity={0.5} scale={10} blur={2.5} far={4} />
+          {/* Controles para que puedas girar y buscar el móvil si se ha perdido */}
+          <OrbitControls />
         </Canvas>
       </div>
 
-      {/* CAPA DE TEXTO */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full pointer-events-none text-white select-none">
-        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-2 text-center mix-blend-difference">
-          NightVibe
-        </h1>
-        <p className="text-sm md:text-xl text-gray-400 tracking-[0.5em] uppercase">
-          La aplicación que te mueve
-        </p>
+        <h1 className="text-5xl font-bold mb-4">NightVibe</h1>
+        <p className="text-sm text-gray-400">AJUSTANDO ESCALA...</p>
       </div>
 
     </main>
