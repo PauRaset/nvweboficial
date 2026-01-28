@@ -1,7 +1,7 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, Float, useTexture } from '@react-three/drei';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture } from '@react-three/drei';
 import { useRef, Suspense } from 'react';
 import * as THREE from 'three';
 
@@ -28,10 +28,12 @@ function Iphone() {
     if (groupRef.current) {
       const r = scroll.offset; // 0 al principio, 1 al final
       
-      // --- LÓGICA DE TEXTURAS ---
+      // --- LÓGICA DE TEXTURAS (SINCRONIZADA CON LA ESPALDA) ---
+      // Cambiamos la imagen justo al 25% y al 75% del scroll.
+      // En estos puntos exactos, la rotación calculada abajo hará que el móvil esté de espaldas.
       let activeTexture = texture1;
-      if (r > 0.33) activeTexture = texture2;
-      if (r > 0.66) activeTexture = texture3;
+      if (r >= 0.25 && r < 0.75) activeTexture = texture2;
+      else if (r >= 0.75) activeTexture = texture3;
 
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
@@ -50,34 +52,44 @@ function Iphone() {
 
       // --- CÁLCULOS DE MOVIMIENTO ---
 
-      // 1. POSICIÓN PENDULAR (Derecha -> Izquierda -> Derecha)
-      // Usamos Math.cos para hacer un viaje de ida y vuelta suave.
-      // r * PI * 2 es un ciclo completo de coseno (1 -> -1 -> 1)
-      // Multiplicado por 1.5 metros de amplitud.
-      const targetPosX = Math.cos(r * Math.PI * 2) * 1.5;
+      // 1. POSICIÓN "ESTÁTICA" (NO BOOMERANG)
+      // Definimos dónde debe estar el móvil en cada tramo.
+      // Usamos lerp para que "viaje" suavemente hasta ahí y se quede quieto un rato.
+      let targetPosX = 1.5; // Por defecto a la derecha (Sección 1)
+      
+      if (r > 0.25 && r < 0.75) {
+        targetPosX = -1.5; // En el tramo medio, viaja a la izquierda (Sección 2)
+      } 
+      if (r >= 0.75) {
+        targetPosX = 1.5; // Al final, vuelve a la derecha (Sección 3)
+      }
 
       // 2. POSICIÓN Y (FLOTACIÓN)
       const targetPosY = Math.sin(state.clock.elapsedTime) * 0.1;
 
-      // 3. ROTACIÓN Y (EL GIRO DE CAMBIO DE PANTALLA)
-      // -0.3: Ángulo inicial para que mire un poco hacia el centro.
-      // + r * Math.PI * 4: Da 2 vueltas completas (720 grados) durante todo el scroll.
-      const targetRotationY = -0.3 + (r * Math.PI * 4);
+      // 3. ROTACIÓN Y (EL GIRO EN EL EJE Z/VERTICAL)
+      // Empieza en 0 (De frente).
+      // r * Math.PI * 4 = 720 grados totales (2 vueltas completas).
+      // - Al 0.25 (cambio img) -> 180º (De espaldas)
+      // - Al 0.50 (leyendo) -> 360º (De frente)
+      // - Al 0.75 (cambio img) -> 540º (De espaldas)
+      // - Al 1.00 (final) -> 720º (De frente)
+      const targetRotationY = r * Math.PI * 4;
 
-      // 4. ROTACIÓN X (MIRAR ARRIBA)
-      // PI/2 es de pie (90º). Le restamos 0.15 para que mire un poco hacia arriba.
-      const targetRotationX = (Math.PI / 2) - 0.15;
+      // 4. ROTACIÓN X (MIRAR UN POCO ARRIBA)
+      const targetRotationX = (Math.PI / 2) - 0.1;
       
-      // 5. ROTACIÓN Z (INERCIA LATERAL)
-      // Un pequeño balanceo según la posición para dar realismo
-      const targetRotationZ = Math.sin(r * Math.PI * 2) * 0.1;
+      // 5. ROTACIÓN Z (INERCIA LATERAL SUAVE)
+      // Se inclina un poquito al moverse para dar sensación de velocidad
+      const targetRotationZ = (targetPosX - groupRef.current.position.x) * 0.1;
 
-      // --- APLICACIÓN CON SUAVIZADO ---
-      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, 3 * delta);
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 3 * delta);
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 3 * delta);
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, 3 * delta);
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, 3 * delta);
+      // --- APLICACIÓN DE FÍSICAS ---
+      // Usamos un lerp un poco más rápido (4 * delta) para que llegue a su sitio y se pare.
+      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, 4 * delta);
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 4 * delta);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 4 * delta);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, 4 * delta);
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, 4 * delta);
     }
   });
 
@@ -99,20 +111,21 @@ export default function Home() {
           <Environment preset="city" />
           
           <Suspense fallback={null}>
-            <ScrollControls pages={3} damping={0.3}>
+            <ScrollControls pages={3} damping={0.4}>
+               {/* iPhone con control total */}
                <Iphone />
                
                <Scroll html style={{ width: '100%', height: '100%' }}>
                   <div className="w-screen px-8">
                     
-                    {/* SECCIÓN 1: Móvil a la Derecha -> Texto a la Izquierda */}
+                    {/* SECCIÓN 1: Texto a la Izquierda */}
                     <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
                       <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
                       <p className="text-xl text-gray-400">La noche cobra vida.</p>
                       <p className="text-sm mt-10 animate-bounce">▼ Haz Scroll</p>
                     </section>
                     
-                    {/* SECCIÓN 2: Móvil a la Izquierda -> Texto a la Derecha (items-end) */}
+                    {/* SECCIÓN 2: Texto a la Derecha */}
                     <section className="h-screen flex flex-col justify-center items-end text-right text-white">
                       <h2 className="text-5xl font-bold mb-4">Conecta</h2>
                       <p className="text-xl text-gray-400 max-w-md">
@@ -120,7 +133,7 @@ export default function Home() {
                       </p>
                     </section>
                     
-                    {/* SECCIÓN 3: Móvil a la Derecha -> Texto a la Izquierda (items-start) */}
+                    {/* SECCIÓN 3: Texto a la Izquierda */}
                     <section className="h-screen flex flex-col justify-center items-start text-left text-white">
                       <h2 className="text-6xl font-bold mb-6">Descárgala hoy</h2>
                       <p className="text-xl text-gray-400 mb-6 max-w-md">
