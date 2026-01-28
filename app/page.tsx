@@ -11,25 +11,26 @@ function Iphone() {
   const { scene, nodes, materials } = useGLTF(MODEL_PATH);
   const groupRef = useRef<Group>(null);
   
-  // Hook para detectar el scroll (va de 0 a 1)
+  // Hook que nos dice dónde está el usuario (de 0 a 1)
   const scroll = useScroll();
 
-  // Esto es para preparar el cambio de pantalla en el futuro
+  // Esto es un truco: Imprime en la consola del navegador los nombres de las piezas
+  // Lo usaremos en el siguiente paso para encontrar la pantalla
   useEffect(() => {
-    console.log("Partes del modelo:", nodes); 
+    console.log("Piezas del iPhone:", nodes);
     console.log("Materiales:", materials);
   }, [nodes, materials]);
 
   useFrame((state) => {
     if (groupRef.current) {
-      // offset es un número entre 0 (arriba del todo) y 1 (abajo del todo)
+      // r es la posición del scroll (0 = arriba, 1 = abajo del todo)
       const r = scroll.offset; 
       
-      // LOGICA DE MOVIMIENTO:
-      // 1. Rotación: Gira 360 grados (Math.PI * 2) según bajas
+      // ANIMACIÓN:
+      // 1. Rotación en Y: Da una vuelta completa (360º) a medida que bajas
       groupRef.current.rotation.y = Math.PI + (r * Math.PI * 2);
       
-      // 2. Inclinación: Se inclina un poco hacia ti al principio
+      // 2. Inclinación leve: Se inclina hacia ti al principio y luego se endereza
       groupRef.current.rotation.x = (1 - r) * 0.2;
     }
   });
@@ -37,7 +38,7 @@ function Iphone() {
   return (
     <group ref={groupRef}>
       <Center top>
-        {/* ESCALA: Aumentada de 0.01 a 0.15 (15 veces más grande) */}
+        {/* ESCALA AJUSTADA: 0.15 es un buen tamaño inicial */}
         <primitive object={scene} scale={0.15} /> 
       </Center>
     </group>
@@ -48,26 +49,30 @@ export default function Home() {
   return (
     <main className="relative w-full h-screen bg-black overflow-hidden">
       
+      {/* CAPA 3D */}
       <div className="absolute inset-0 z-0">
         <Canvas camera={{ position: [0, 0, 4], fov: 40 }}>
           <ambientLight intensity={3} />
           <Environment preset="city" />
           
-          {/* ScrollControls crea el espacio para hacer scroll.
-              pages={3} significa que la web será 3 veces el alto de la pantalla */}
+          {/* CONTROL DEL SCROLL:
+              pages={3} define qué tan larga es la web.
+              damping={0.2} hace que el movimiento sea suave (con inercia). */}
           <ScrollControls pages={3} damping={0.2}>
              <Iphone />
+             
+             {/* Aquí podríamos poner texto HTML que se mueva con el scroll si quisiéramos */}
           </ScrollControls>
         </Canvas>
       </div>
 
-      {/* Texto fijo (overlay) que invita a bajar */}
+      {/* TEXTO INICIAL (Overlay fijo) */}
       <div className="absolute top-10 w-full text-center pointer-events-none z-10">
-        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tighter mix-blend-difference">
+        <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tighter mix-blend-difference opacity-90">
           NightVibe
         </h1>
-        <p className="text-sm text-gray-400 mt-2 animate-pulse">
-          ▼ Haz Scroll para explorar ▼
+        <p className="text-sm text-gray-400 mt-4 animate-bounce">
+          ▼ Desliza para descubrir ▼
         </p>
       </div>
 
