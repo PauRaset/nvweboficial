@@ -5,18 +5,17 @@ import { useGLTF, Environment, ContactShadows, Center, Float } from '@react-thre
 import { useRef } from 'react';
 import { Mesh } from 'three';
 
-// Usamos este modelo que es el estándar de la industria (iPhone 13 Pro)
-// Es una URL directa a un CDN rápido, así evitamos errores de descarga local
-const MODEL_URL = '/iphone.glb';
+// USAMOS TU ARCHIVO LOCAL
+const MODEL_PATH = '/iphone.glb';
 
 function Iphone() {
-  const { scene } = useGLTF(MODEL_URL);
+  const { scene } = useGLTF(MODEL_PATH);
   const phoneRef = useRef<Mesh>(null);
 
   useFrame((state) => {
     if (phoneRef.current) {
       const t = state.clock.getElapsedTime();
-      // Animación suave: flota y gira un poco
+      // Rotación suave para que se vea por todos lados
       phoneRef.current.rotation.y = Math.PI + Math.sin(t / 2) * 0.3; 
       phoneRef.current.position.y = Math.sin(t) * 0.1;
     }
@@ -24,9 +23,10 @@ function Iphone() {
 
   return (
     <group ref={phoneRef}>
-      {/* Center asegura que el modelo esté SIEMPRE en el medio, da igual su tamaño original */}
+      {/* Center arregla el problema de que se vea cortado o descentrado */}
+      {/* scale={0.1} reduce el tamaño si el modelo original es gigante */}
       <Center top>
-        <primitive object={scene} />
+        <primitive object={scene} scale={0.5} /> 
       </Center>
     </group>
   );
@@ -38,8 +38,8 @@ export default function Home() {
       
       {/* CAPA 3D */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 3.5], fov: 50 }}>
-          <ambientLight intensity={2} />
+        <Canvas camera={{ position: [0, 0, 4], fov: 45 }}>
+          <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
@@ -52,7 +52,7 @@ export default function Home() {
 
       {/* CAPA DE TEXTO */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full pointer-events-none text-white select-none">
-        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-2 text-center">
+        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter mb-2 text-center mix-blend-difference">
           NightVibe
         </h1>
         <p className="text-sm md:text-xl text-gray-400 tracking-[0.5em] uppercase">
