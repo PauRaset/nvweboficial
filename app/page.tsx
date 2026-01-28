@@ -1,30 +1,44 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, Float, OrbitControls } from '@react-three/drei';
-import { useRef } from 'react';
-import { Mesh } from 'three';
+import { useGLTF, Environment, Center, ScrollControls, useScroll } from '@react-three/drei';
+import { useRef, useEffect } from 'react';
+import { Mesh, Group } from 'three';
 
-// TU ARCHIVO LOCAL
 const MODEL_PATH = '/iphone.glb';
 
 function Iphone() {
-  const { scene } = useGLTF(MODEL_PATH);
-  const phoneRef = useRef<Mesh>(null);
+  const { scene, nodes, materials } = useGLTF(MODEL_PATH);
+  const groupRef = useRef<Group>(null);
+  
+  // Hook para detectar el scroll (va de 0 a 1)
+  const scroll = useScroll();
+
+  // Esto es para preparar el cambio de pantalla en el futuro
+  useEffect(() => {
+    console.log("Partes del modelo:", nodes); 
+    console.log("Materiales:", materials);
+  }, [nodes, materials]);
 
   useFrame((state) => {
-    if (phoneRef.current) {
-      const t = state.clock.getElapsedTime();
-      phoneRef.current.rotation.y = Math.PI + Math.sin(t / 2) * 0.3; 
+    if (groupRef.current) {
+      // offset es un número entre 0 (arriba del todo) y 1 (abajo del todo)
+      const r = scroll.offset; 
+      
+      // LOGICA DE MOVIMIENTO:
+      // 1. Rotación: Gira 360 grados (Math.PI * 2) según bajas
+      groupRef.current.rotation.y = Math.PI + (r * Math.PI * 2);
+      
+      // 2. Inclinación: Se inclina un poco hacia ti al principio
+      groupRef.current.rotation.x = (1 - r) * 0.2;
     }
   });
 
   return (
-    <group ref={phoneRef}>
-      {/* Usamos Center para forzar que esté en medio */}
-      <Center>
-        {/* IMPORTANTE: Reducimos la escala muchísimo (0.01) */}
-        <primitive object={scene} scale={0.01} /> 
+    <group ref={groupRef}>
+      <Center top>
+        {/* ESCALA: Aumentada de 0.01 a 0.15 (15 veces más grande) */}
+        <primitive object={scene} scale={0.15} /> 
       </Center>
     </group>
   );
@@ -35,31 +49,26 @@ export default function Home() {
     <main className="relative w-full h-screen bg-black overflow-hidden">
       
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-          {/* Luces fuertes para ver bien */}
+        <Canvas camera={{ position: [0, 0, 4], fov: 40 }}>
           <ambientLight intensity={3} />
-          <spotLight position={[10, 10, 10]} intensity={2} />
-          <Environment preset="studio" />
+          <Environment preset="city" />
           
-          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+          {/* ScrollControls crea el espacio para hacer scroll.
+              pages={3} significa que la web será 3 veces el alto de la pantalla */}
+          <ScrollControls pages={3} damping={0.2}>
              <Iphone />
-          </Float>
-
-          {/* Caja roja de referencia en el centro exacto (0,0,0) */}
-          {/* Si ves la caja roja pero no el iPhone, es que el iPhone sigue siendo enorme o invisible */}
-          <mesh position={[0,0,0]}>
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshStandardMaterial color="red" wireframe />
-          </mesh>
-          
-          {/* Controles para que puedas girar y buscar el móvil si se ha perdido */}
-          <OrbitControls />
+          </ScrollControls>
         </Canvas>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center h-full pointer-events-none text-white select-none">
-        <h1 className="text-5xl font-bold mb-4">NightVibe</h1>
-        <p className="text-sm text-gray-400">AJUSTANDO ESCALA...</p>
+      {/* Texto fijo (overlay) que invita a bajar */}
+      <div className="absolute top-10 w-full text-center pointer-events-none z-10">
+        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tighter mix-blend-difference">
+          NightVibe
+        </h1>
+        <p className="text-sm text-gray-400 mt-2 animate-pulse">
+          ▼ Haz Scroll para explorar ▼
+        </p>
       </div>
 
     </main>
