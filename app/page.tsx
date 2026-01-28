@@ -14,9 +14,9 @@ function Iphone() {
 
   // IMPORTANTE: Renombra tus imágenes en /public a minúsculas para evitar errores
   // Si tus archivos son PNG, cambia aquí .jpg por .png
-  const texture1 = useTexture('/1.jpg'); 
-  const texture2 = useTexture('/2.jpg');
-  const texture3 = useTexture('/3.jpg');
+  const texture1 = useTexture('/1.PNG'); 
+  const texture2 = useTexture('/2.JPEG');
+  const texture3 = useTexture('/3.PNG');
 
   [texture1, texture2, texture3].forEach(t => {
     t.flipY = false;
