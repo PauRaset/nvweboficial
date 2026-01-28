@@ -11,8 +11,8 @@ function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
-  const [nombresPiezas, setNombresPiezas] = useState<string[]>([]);
-
+  
+  // Texturas
   const texture1 = useTexture('/1.jpg'); 
   const texture2 = useTexture('/2.jpg'); 
   const texture3 = useTexture('/3.jpg');
@@ -22,13 +22,12 @@ function Iphone() {
     t.flipY = false; 
     t.colorSpace = THREE.SRGBColorSpace;
     t.center.set(0.5, 0.5);
-    t.rotation = 0; // Empezamos sin rotación
+    
+    // AQUÍ ESTÁ EL CAMBIO: Math.PI equivale a 180 grados (media vuelta)
+    t.rotation = Math.PI; 
+    
     t.repeat.set(1, 1); 
   });
-
-  useEffect(() => {
-    setNombresPiezas(Object.keys(nodes));
-  }, [nodes]);
 
   useFrame((state, delta) => {
     if (groupRef.current) {
@@ -39,8 +38,7 @@ function Iphone() {
 
       // --- MODO PANTALLA LED ---
       Object.values(nodes).forEach((node: any) => {
-        // AQUÍ ESTABA EL ERROR: Antes seleccionábamos el cristal ('glass')
-        // Ahora seleccionamos EXCLUSIVAMENTE la pantalla plana: 'scr'
+        // Seleccionamos la pantalla plana
         if (node.isMesh && node.name === 'object010_scr_0') {
              
              // Convertimos el material a luz sólida si no lo es ya
@@ -56,6 +54,7 @@ function Iphone() {
         }
       });
 
+      // Movimiento suave
       const targetRotationY = r * Math.PI * 0.5; 
       const targetPosX = r * 1.5; 
       groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 4 * delta);
@@ -69,12 +68,7 @@ function Iphone() {
         <primitive object={scene} scale={0.01} /> 
       </Center>
       
-      {/* Debug: Muestra si estamos encontrando la pieza */}
-      <Html position={[20, 0, 0]} center>
-         <div className="bg-white p-2 text-xs">
-           Target: object010_scr_0
-         </div>
-      </Html>
+      {/* He quitado la caja de debug blanca porque ya sabemos que funciona */}
     </group>
   );
 }
