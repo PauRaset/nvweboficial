@@ -32,8 +32,8 @@ function Iphone() {
     // AQUÍ ESTÁ LA CLAVE: rotation-x={Math.PI / 2} pone el modelo de pie
     <group ref={groupRef} rotation-x={Math.PI / 2}>
       <Center>
-        {/* ESCALA REDUCIDA: 0.03 para hacerlo más pequeño */}
-        <primitive object={scene} scale={0.03} /> 
+        {/* ESCALA REDUCIDA: 0.01 para hacerlo más pequeño */}
+        <primitive object={scene} scale={0.01} /> 
       </Center>
     </group>
   );
