@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, Float, useTexture } from '@react-three/drei';
-import { useRef, Suspense } from 'react';
+import { useRef, Suspense, useEffect } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
@@ -12,40 +12,47 @@ function Iphone() {
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
 
-  // Carga de texturas con nombres exactos
-  const texture1 = useTexture('/1.PNG');
-  const texture2 = useTexture('/2.JPEG');
-  const texture3 = useTexture('/3.PNG');
+  // IMPORTANTE: Renombra tus imágenes en /public a minúsculas para evitar errores
+  // Si tus archivos son PNG, cambia aquí .jpg por .png
+  const texture1 = useTexture('/1.jpg'); 
+  const texture2 = useTexture('/2.jpg');
+  const texture3 = useTexture('/3.jpg');
 
   [texture1, texture2, texture3].forEach(t => {
     t.flipY = false;
     t.colorSpace = THREE.SRGBColorSpace;
   });
 
+  // CHIVATO: Esto imprimirá en la consola (F12) los nombres de las piezas
+  useEffect(() => {
+    console.log("NOMBRES DE LAS PIEZAS:", Object.keys(nodes));
+  }, [nodes]);
+
   useFrame((state, delta) => {
     if (groupRef.current) {
       const r = scroll.offset; 
 
-      // --- CAMBIO DE PANTALLA (VERSIÓN ULTRA-SEGURA PARA TYPESCRIPT) ---
-      const screenMesh = (nodes.Screen || nodes.Body_2 || Object.values(nodes).find((n: any) => n.name.includes('Screen'))) as any;
+      // --- BÚSQUEDA DE LA PANTALLA ---
+      // Buscamos cualquier cosa que parezca una pantalla
+      const screenMesh = Object.values(nodes).find((n: any) => 
+        n.name.toLowerCase().includes('screen') || 
+        n.name.toLowerCase().includes('display') ||
+        n.name.toLowerCase().includes('body_2')
+      ) as any;
 
       if (screenMesh && screenMesh.material) {
-        // Forzamos a que trate el material como un objeto con propiedad 'map'
         const targetMaterial = Array.isArray(screenMesh.material) ? screenMesh.material[0] : screenMesh.material;
         
         if (targetMaterial && 'map' in targetMaterial) {
-          if (r < 0.33) {
-            targetMaterial.map = texture1;
-          } else if (r < 0.66) {
-            targetMaterial.map = texture2;
-          } else {
-            targetMaterial.map = texture3;
-          }
+          if (r < 0.33) targetMaterial.map = texture1;
+          else if (r < 0.66) targetMaterial.map = texture2;
+          else targetMaterial.map = texture3;
+          
           targetMaterial.needsUpdate = true;
         }
       }
 
-      // --- TU MOVIMIENTO ORIGINAL ---
+      // --- MOVIMIENTO ---
       const targetRotationY = r * Math.PI * 0.5; 
       const targetPosX = r * 1.5; 
 
@@ -73,12 +80,14 @@ export default function Home() {
           
           <Suspense fallback={null}>
             <ScrollControls pages={3} damping={0.3}>
-               <Scroll>
-                  <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-                      <Iphone />
-                  </Float>
-               </Scroll>
                
+               {/* --- CORRECCIÓN CLAVE --- */}
+               {/* El iPhone está FUERA de <Scroll>, así no se va para arriba */}
+               <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+                  <Iphone />
+               </Float>
+               
+               {/* Solo el HTML está dentro de <Scroll> para moverse */}
                <Scroll html style={{ width: '100%', height: '100%' }}>
                   <div className="w-screen px-8">
                     <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
@@ -102,6 +111,7 @@ export default function Home() {
                     </section>
                   </div>
                </Scroll>
+
             </ScrollControls>
           </Suspense>
         </Canvas>
