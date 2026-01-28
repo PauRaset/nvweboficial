@@ -1,25 +1,55 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, Float } from '@react-three/drei';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, Float, useTexture } from '@react-three/drei';
 import { useRef } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
 function Iphone() {
-  const { scene } = useGLTF(MODEL_PATH);
+  // IMPORTANTE: Añadimos 'nodes' para poder buscar la pantalla dentro del modelo
+  const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
+
+  // 1. CARGAMOS LAS IMÁGENES (Asegúrate de que están en la carpeta /public)
+  const texture1 = useTexture('/1.PNG');
+  const texture2 = useTexture('/2.JPEG');
+  const texture3 = useTexture('/3.PNG');
+
+  // 2. CONFIGURACIÓN DE TEXTURAS
+  // Esto evita que se vean invertidas o con colores lavados
+  [texture1, texture2, texture3].forEach(t => {
+    t.flipY = false;
+    t.colorSpace = THREE.SRGBColorSpace;
+  });
 
   useFrame((state, delta) => {
     if (groupRef.current) {
       const r = scroll.offset; 
 
-      // OBJETIVOS DE MOVIMIENTO (Ajustados para el modelo de pie)
-      // Rotación Y: Gira sobre su eje vertical
+      // --- LÓGICA DE CAMBIO DE PANTALLA ---
+      // Buscamos el objeto que hace de pantalla.
+      // En la mayoría de modelos GLB de iPhone, se llama "Screen", "Body_2" o similar.
+      // Esta línea busca cualquier nodo que contenga la palabra "Screen" en su nombre.
+      const screenMesh = nodes.Screen || nodes.Body_2 || Object.values(nodes).find((n: any) => n.name.includes('Screen'));
+
+      if (screenMesh) {
+        // Asignamos la textura según el porcentaje de scroll
+        if (r < 0.33) {
+          screenMesh.material.map = texture1;
+        } else if (r < 0.66) {
+          screenMesh.material.map = texture2;
+        } else {
+          screenMesh.material.map = texture3;
+        }
+        // Avisamos a Three.js de que el material ha cambiado
+        screenMesh.material.needsUpdate = true;
+      }
+
+      // --- TUS OBJETIVOS DE MOVIMIENTO ORIGINALES ---
       const targetRotationY = r * Math.PI * 0.5; 
-      // Posición X: Se mueve a la derecha
       const targetPosX = r * 1.5; 
 
       // Aplicamos los movimientos con suavidad
@@ -29,10 +59,10 @@ function Iphone() {
   });
 
   return (
-    // AQUÍ ESTÁ LA CLAVE: rotation-x={Math.PI / 2} pone el modelo de pie
+    // MANTENEMOS TU ROTACIÓN ORIGINAL
     <group ref={groupRef} rotation-x={Math.PI / 2}>
       <Center>
-        {/* ESCALA REDUCIDA: 0.01 para hacerlo más pequeño */}
+        {/* MANTENEMOS TU ESCALA ORIGINAL DE 0.01 */}
         <primitive object={scene} scale={0.01} /> 
       </Center>
     </group>
