@@ -12,7 +12,7 @@ function Iphone() {
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
 
-  // Carga de texturas (Respetando tus nombres exactos)
+  // Carga de texturas con nombres exactos
   const texture1 = useTexture('/1.PNG');
   const texture2 = useTexture('/2.JPEG');
   const texture3 = useTexture('/3.PNG');
@@ -26,21 +26,23 @@ function Iphone() {
     if (groupRef.current) {
       const r = scroll.offset; 
 
-      // --- CAMBIO DE PANTALLA (CORREGIDO PARA TYPESCRIPT) ---
-      const screenMesh = (nodes.Screen || nodes.Body_2 || Object.values(nodes).find((n: any) => n.name.includes('Screen'))) as THREE.Mesh;
+      // --- CAMBIO DE PANTALLA (VERSIÓN ULTRA-SEGURA PARA TYPESCRIPT) ---
+      const screenMesh = (nodes.Screen || nodes.Body_2 || Object.values(nodes).find((n: any) => n.name.includes('Screen'))) as any;
 
-      // Verificamos que sea una malla y tenga material para evitar el error de Vercel
-      if (screenMesh && screenMesh.material && 'map' in screenMesh.material) {
-        const material = screenMesh.material as THREE.MeshStandardMaterial;
+      if (screenMesh && screenMesh.material) {
+        // Forzamos a que trate el material como un objeto con propiedad 'map'
+        const targetMaterial = Array.isArray(screenMesh.material) ? screenMesh.material[0] : screenMesh.material;
         
-        if (r < 0.33) {
-          material.map = texture1;
-        } else if (r < 0.66) {
-          material.map = texture2;
-        } else {
-          material.map = texture3;
+        if (targetMaterial && 'map' in targetMaterial) {
+          if (r < 0.33) {
+            targetMaterial.map = texture1;
+          } else if (r < 0.66) {
+            targetMaterial.map = texture2;
+          } else {
+            targetMaterial.map = texture3;
+          }
+          targetMaterial.needsUpdate = true;
         }
-        material.needsUpdate = true;
       }
 
       // --- TU MOVIMIENTO ORIGINAL ---
@@ -69,7 +71,6 @@ export default function Home() {
           <ambientLight intensity={2} />
           <Environment preset="city" />
           
-          {/* Suspense evita que la web falle mientras cargan las imágenes o el modelo */}
           <Suspense fallback={null}>
             <ScrollControls pages={3} damping={0.3}>
                <Scroll>
