@@ -26,27 +26,22 @@ function Iphone() {
 
   useFrame((state, delta) => {
     if (groupRef.current) {
-      const r = scroll.offset; // Va de 0 a 1
+      const r = scroll.offset; 
       
-      // --- LÓGICA DE SECCIONES (0, 1, 2) ---
-      // Calculamos en qué "diapositiva" estamos.
-      // Math.floor(r * 3) nos da 0 al principio, 1 en medio, 2 al final.
-      const sectionIndex = Math.floor(r * 2.9); // 2.9 para asegurar que llegue al final
+      const sectionIndex = Math.floor(r * 2.9); 
       
       let activeTexture = texture1;
       if (r > 0.33) activeTexture = texture2;
       if (r > 0.66) activeTexture = texture3;
 
-      // --- CAMBIO DE IMAGEN ---
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
              if (!(node.material instanceof THREE.MeshBasicMaterial)) {
                 node.material = new THREE.MeshBasicMaterial({
                   map: activeTexture,
-                  toneMapped: false,
+                  toneMapped: false, 
                 });
              }
-             // Solo actualizamos si la textura es diferente para optimizar
              if (node.material.map !== activeTexture) {
                node.material.map = activeTexture;
                node.material.needsUpdate = true;
@@ -54,37 +49,43 @@ function Iphone() {
         }
       });
 
-      // --- CÁLCULOS DE MOVIMIENTO ---
+      // --- CÁLCULOS DE MOVIMIENTO CORREGIDOS ---
 
-      // 1. POSICIÓN (De derecha a izquierda)
-      // Empieza en 1.5 (Derecha) y acaba en -1.5 (Izquierda)
-      const targetPosX = 1.5 - (r * 3); 
+      // 1. POSICIÓN X
+      // Empieza en 1.5 (Derecha) y cruza hacia la izquierda (-0.5)
+      // Ajustado para que no se salga tanto de la pantalla al final
+      const targetPosX = 1.5 - (r * 2.5); 
 
-      // 2. ROTACIÓN Y (EL GIRO MÁGICO)
-      // Base: -0.5 (Mira un poco a la izquierda/centro al principio)
-      // + r * 0.5 (Gira muy lento mientras bajas para dar dinamismo)
-      // + sectionIndex * Math.PI * 2 (¡AQUÍ ESTÁ EL TRUCO! Suma 360 grados por cada sección)
-      const targetRotationY = -0.5 + (r * 0.5) + (sectionIndex * Math.PI * 2);
+      // 2. POSICIÓN Y (FLOTACIÓN)
+      // Añadimos un leve movimiento vertical para que no parezca pegado al suelo
+      const targetPosY = Math.sin(state.clock.elapsedTime) * 0.1;
 
-      // 3. INCLINACIÓN (Tilt)
-      // Un poco inclinado hacia arriba (0.1) constante
-      const targetRotationX = 0.1;
+      // 3. ROTACIÓN Y (EL GIRO)
+      // Empieza en -0.3 (Mirando sutilmente al centro)
+      // El giro de 360 grados por sección se mantiene
+      const targetRotationY = -0.3 + (sectionIndex * Math.PI * 2);
+
+      // 4. ROTACIÓN X (LA CLAVE DEL "ESTIRAMIENTO")
+      // ANTES: 0.1 (Tumbado) -> MALO
+      // AHORA: (Math.PI / 2) es 90 grados (De pie). Le restamos 0.1 para inclinarlo un pelín hacia arriba.
+      const targetRotationX = (Math.PI / 2) - 0.1;
       
-      // 4. INCLINACIÓN LATERAL (Z)
-      // Se inclina un poco según se mueve para parecer que flota
-      const targetRotationZ = (1 - r * 2) * 0.1; // Leve balanceo
+      // 5. ROTACIÓN Z (BALANCEO)
+      const targetRotationZ = (1 - r * 2) * 0.05;
 
-      // --- APLICAMOS FÍSICA SUAVE (LERP) ---
-      // El factor '4 * delta' controla la velocidad.
-      // Al cambiar de sección, targetRotationY salta 360º, y el lerp hace que el móvil gire rápido para alcanzarlo.
+      // --- APLICACIÓN ---
       groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, 3 * delta);
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 3 * delta); // 3 es velocidad media/rápida
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 3 * delta); // Añadido Y
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, 3 * delta);
+      
+      // Aquí aplicamos la corrección de X
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, 3 * delta);
       groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, 3 * delta);
     }
   });
 
   return (
+    // Inicialmente lo ponemos de pie (PI / 2) para que no haya saltos raros al cargar
     <group ref={groupRef} rotation-x={Math.PI / 2}>
       <Center>
         <primitive object={scene} scale={0.01} /> 
@@ -103,20 +104,19 @@ export default function Home() {
           
           <Suspense fallback={null}>
             <ScrollControls pages={3} damping={0.3}>
-               {/* Sacamos el iPhone del Float para tener control total de su posición */}
                <Iphone />
                
                <Scroll html style={{ width: '100%', height: '100%' }}>
                   <div className="w-screen px-8">
                     
-                    {/* SECCIÓN 1 (Alinear a la izquierda porque el móvil está a la derecha) */}
+                    {/* SECCIÓN 1 */}
                     <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
                       <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
                       <p className="text-xl text-gray-400">La noche cobra vida.</p>
                       <p className="text-sm mt-10 animate-bounce">▼ Haz Scroll</p>
                     </section>
                     
-                    {/* SECCIÓN 2 (Centro/Derecha) */}
+                    {/* SECCIÓN 2 */}
                     <section className="h-screen flex flex-col justify-center items-end text-right text-white">
                       <h2 className="text-5xl font-bold mb-4">Conecta</h2>
                       <p className="text-xl text-gray-400 max-w-md">
@@ -124,7 +124,7 @@ export default function Home() {
                       </p>
                     </section>
                     
-                    {/* SECCIÓN 3 (Centro) */}
+                    {/* SECCIÓN 3 */}
                     <section className="h-screen flex flex-col justify-center items-center text-center text-white">
                       <h2 className="text-6xl font-bold mb-6">Descárgala hoy</h2>
                       <button className="pointer-events-auto bg-white text-black px-8 py-3 rounded-full font-bold text-lg hover:scale-105 transition-transform">
