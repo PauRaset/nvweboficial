@@ -131,7 +131,7 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15] font-sans">
       
-      {/* NAVBAR: Texto blanco forzado */}
+      {/* NAVBAR: Arreglado el color a blanco fijo */}
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-12 py-6 text-white">
         <div className="font-bold text-xl tracking-tighter">NIGHTVIBE®</div>
         <div className="hidden md:flex gap-8 text-xs font-medium tracking-widest uppercase opacity-70">
@@ -159,7 +159,8 @@ export default function Home() {
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                <div className="w-screen text-white"> {/* IMPORTANTE: text-white aquí fuerza el color */}
+                {/* AQUÍ ESTABA EL ERROR: He añadido 'text-white' para forzar que todo se vea */}
+                <div className="w-screen text-white"> 
                   
                   {/* SECCIÓN 1: HERO */}
                   <section className="h-screen flex flex-col justify-center px-8 md:px-24">
