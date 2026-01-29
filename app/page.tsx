@@ -12,8 +12,6 @@ const MODEL_PATH = '/iphone.glb';
 function Loader() {
   const { progress } = useProgress();
   
-  // Si la carga está completa (100%), ocultamos el loader con CSS (opacity-0)
-  // pointer-events-none es vital para poder hacer click en la web después
   return (
     <div 
       className={`fixed top-0 left-0 w-full h-full z-[200] bg-black flex flex-col items-center justify-center transition-opacity duration-1000 ${progress === 100 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
@@ -136,7 +134,6 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15]">
       
-      {/* --- AÑADIMOS EL LOADER AQUÍ --- */}
       <Loader />
 
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
@@ -162,7 +159,9 @@ export default function Home() {
             <ScrollControls pages={7} damping={0.3}>
               <Stars />
               <Iphone />
-              <EffectComposer disableNormalPass>
+              
+              {/* --- AQUÍ ESTABA EL ERROR: CORREGIDO 'enableNormalPass={false}' --- */}
+              <EffectComposer enableNormalPass={false}>
                 <Bloom luminanceThreshold={0.2} mipmapBlur intensity={0.5} radius={0.5} />
                 <Vignette eskil={false} offset={0.1} darkness={1.1} />
                 <Noise opacity={0.03} /> 
