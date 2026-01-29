@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
@@ -13,7 +12,6 @@ function Iphone() {
   const groupRef = useRef<THREE.Group>(null);
   const scroll = useScroll();
 
-  // Cargamos las 7 imágenes
   const textures = [
     useTexture('/1.jpg'),
     useTexture('/2.jpg'),
@@ -24,7 +22,6 @@ function Iphone() {
     useTexture('/7.jpg'),
   ];
 
-  // Configuración masiva de texturas
   useMemo(() => {
     textures.forEach(t => {
       t.flipY = true;
@@ -35,13 +32,13 @@ function Iphone() {
 
   useFrame((state, delta) => {
     if (groupRef.current) {
-      const r = scroll.offset; // 0 a 1
-      const step = 1 / textures.length; // Tamaño de cada sección de scroll
+      const r = scroll.offset; 
       
-      // --- LÓGICA DE TEXTURAS AUTOMÁTICA ---
+      // Calculamos el índice actual basado en el scroll (0 a 6)
       const textureIndex = Math.min(Math.floor(r * textures.length), textures.length - 1);
       const activeTexture = textures[textureIndex];
 
+      // --- ACTUALIZACIÓN DE PANTALLA ---
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
@@ -57,29 +54,27 @@ function Iphone() {
         }
       });
 
-      // --- CÁLCULOS DE MOVIMIENTO DINÁMICO ---
+      // --- CÁLCULOS DE MOVIMIENTO ---
 
-      // 1. ZIG-ZAG AUTOMÁTICO (Derecha <-> Izquierda)
-      // Usamos textureIndex para saber si toca estar a un lado u otro
-      // Si el índice es par (0, 2, 4, 6) -> Derecha (1.3)
-      // Si es impar (1, 3, 5) -> Izquierda (-1.3)
+      // 1. POSICIÓN X: Alterna Derecha (1.3) e Izquierda (-1.3)
       const isEven = textureIndex % 2 === 0;
       let targetPosX = isEven ? 1.3 : -1.3;
 
-      // 2. GIRO Z (Proporcional a 7 imágenes)
-      // Multiplicamos por Math.PI * 10 para que de varias vueltas en el recorrido
-      const targetRotationZ = -0.2 + (r * Math.PI * 10);
+      // 2. ROTACIÓN Z (GIRO): 
+      // Cada sección añade una vuelta completa (Math.PI * 2)
+      // Restamos -0.2 inicial para estética.
+      const targetRotationZ = -0.2 + (textureIndex * Math.PI * 2);
 
-      // 3. INERCIA Y (BALANCEO)
+      // 3. INERCIA Y (BALANCEO): Se inclina según el movimiento lateral
       const dist = targetPosX - groupRef.current.position.x;
-      const targetRotationY = dist * 0.25; 
+      const targetRotationY = dist * 0.2; 
 
-      // 4. FLOTACIÓN Y EJE X
-      const targetPosY = Math.sin(state.clock.elapsedTime) * 0.1;
+      // 4. ESTÁTICA X Y FLOTACIÓN Y
       const targetRotationX = Math.PI / 2;
+      const targetPosY = Math.sin(state.clock.elapsedTime) * 0.05;
 
-      // --- APLICACIÓN DE FÍSICAS ---
-      const smoothSpeed = 7 * delta; 
+      // --- APLICACIÓN SUAVE (SMOOTH) ---
+      const smoothSpeed = 6 * delta; 
 
       groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, smoothSpeed);
       groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, smoothSpeed);
@@ -103,54 +98,54 @@ export default function Home() {
     <main className="w-full h-full bg-black">
       <div className="fixed top-0 left-0 w-full h-full">
         <Canvas camera={{ position: [0, 0, 4], fov: 35 }}>
-          <ambientLight intensity={2} />
+          <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Suspense fallback={null}>
-            {/* Pages=8 para que el scroll sea largo y relajado con 7 imágenes */}
-            <ScrollControls pages={8} damping={0.25}>
+            {/* Pages = número de texturas para que el scroll sea proporcional */}
+            <ScrollControls pages={7} damping={0.3}>
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-screen px-8">
-                  {/* He generado los huecos para las 7 secciones de texto alternando lados */}
                   
                   <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
                     <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
-                    <p className="text-xl text-gray-400">La noche cobra vida.</p>
+                    <p className="text-xl text-gray-400">Tu ciudad, tus reglas.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right text-white">
-                    <h2 className="text-5xl font-bold mb-4">Descubre</h2>
-                    <p className="text-xl text-gray-400 max-w-md">Los mejores clubs a un toque de distancia.</p>
+                    <h2 className="text-5xl font-bold mb-4 uppercase italic">Descubre</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Explora los eventos más exclusivos cerca de ti.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start text-white">
-                    <h2 className="text-5xl font-bold mb-4">Conecta</h2>
-                    <p className="text-xl text-gray-400 max-w-md">Tu gente, tu música, tu noche.</p>
+                    <h2 className="text-5xl font-bold mb-4 uppercase italic">Conecta</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Haz match con personas que comparten tu misma vibra.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right text-white">
-                    <h2 className="text-5xl font-bold mb-4">Reserva</h2>
-                    <p className="text-xl text-gray-400 max-w-md">Sin colas, sin esperas, solo vibra.</p>
+                    <h2 className="text-5xl font-bold mb-4 uppercase italic">Reserva</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Tu mesa VIP lista en segundos. Sin esperas.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start text-white">
-                    <h2 className="text-5xl font-bold mb-4">VIVE</h2>
-                    <p className="text-xl text-gray-400 max-w-md">Eventos exclusivos cada fin de semana.</p>
+                    <h2 className="text-5xl font-bold mb-4 uppercase italic">VIVE</h2>
+                    <p className="text-xl text-gray-400 max-w-md">No solo salgas, crea recuerdos inolvidables.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right text-white">
-                    <h2 className="text-5xl font-bold mb-4">Seguridad</h2>
-                    <p className="text-xl text-gray-400 max-w-md">Entradas verificadas y acceso garantizado.</p>
+                    <h2 className="text-5xl font-bold mb-4 uppercase italic">Seguridad</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Control total de tus entradas y acceso garantizado.</p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-center text-center text-white">
-                    <h2 className="text-7xl font-bold mb-6">Únete</h2>
-                    <button className="bg-white text-black px-12 py-4 rounded-full font-bold text-xl hover:scale-105 transition-transform">
-                      App Store
+                    <h2 className="text-7xl font-bold mb-6 italic">Let's vibe.</h2>
+                    <button className="bg-white text-black px-12 py-4 rounded-full font-bold text-xl hover:bg-gray-200 transition-colors">
+                      Descargar App
                     </button>
                   </section>
+                  
                 </div>
               </Scroll>
             </ScrollControls>
