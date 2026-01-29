@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial, useProgress } from '@react-three/drei';
-// Efectos para el "Look" Neon (Importante para la estética)
+// Recuperamos los efectos para que la pantalla del móvil BRILLE y no se vea gris
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- 1. COMPONENTE DE ANIMACIÓN (FadeIn) ---
+// --- COMPONENTE DE ANIMACIÓN (FadeIn) ---
 function FadeIn({ children, delay = 0, x = 0 }: { children: React.ReactNode, delay?: number, x?: number }) {
   return (
     <motion.div
@@ -24,7 +24,7 @@ function FadeIn({ children, delay = 0, x = 0 }: { children: React.ReactNode, del
   );
 }
 
-// --- 2. PANTALLA DE CARGA (Loader) ---
+// --- LOADER ---
 function Loader() {
   const { progress } = useProgress();
   return (
@@ -37,7 +37,7 @@ function Loader() {
   );
 }
 
-// --- 3. ESTRELLAS (Tu código base) ---
+// --- ESTRELLAS (FONDO) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   const [positions] = useState(() => {
@@ -62,7 +62,7 @@ function Stars(props: any) {
   );
 }
 
-// --- 4. IPHONE (Tu lógica de movimiento intacta) ---
+// --- IPHONE ---
 function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
@@ -86,7 +86,7 @@ function Iphone() {
 
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
-          // IMPORTANTE: toneMapped: false permite que la pantalla brille con el Bloom
+          // toneMapped: false es CRUCIAL para que el Bloom funcione
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
             node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
@@ -128,7 +128,6 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15]">
       
-      {/* PANTALLA DE CARGA */}
       <Loader />
 
       {/* NAVBAR */}
@@ -144,10 +143,12 @@ export default function Home() {
         </button>
       </nav>
 
+      {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
         <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 1.5]}>
           <color attach="background" args={['#0b0c15']} />
           <fog attach="fog" args={['#0b0c15', 8, 25]} />
+          
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
@@ -156,8 +157,8 @@ export default function Home() {
               <Stars />
               <Iphone />
               
-              {/* EFECTOS VISUALES - Corregido para evitar error de build */}
-              {/* enableNormalPass={false} es la corrección clave */}
+              {/* EFECTOS VISUALES (Sin esto, la textura del móvil se ve gris y plana) */}
+              {/* enableNormalPass={false} corrige el error de compilación */}
               <EffectComposer enableNormalPass={false}>
                 <Bloom luminanceThreshold={0.2} mipmapBlur intensity={0.5} radius={0.5} />
                 <Vignette eskil={false} offset={0.1} darkness={1.1} />
@@ -184,13 +185,13 @@ export default function Home() {
 
                   {/* --- SECCIÓN 2: DISCOVERY --- */}
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
-                    {/* Texto Fantasma de Fondo */}
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none overflow-hidden">
-                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter translate-x-12">DISC</h2>
+                    {/* Ghost Text */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-5 pointer-events-none select-none overflow-hidden">
+                       <h2 className="text-[25vh] font-black text-white leading-none tracking-tighter translate-x-20">DISCOVER</h2>
                     </div>
 
                     <FadeIn x={50}>
-                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">01</h2>
+                      <h2 className="text-7xl font-black mb-4 text-white/10 uppercase absolute -top-24 right-12">01</h2>
                       <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">ENCUENTRA<br/>TU LUGAR</h3>
                       <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
                         El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto revelado en tiempo real.
@@ -200,12 +201,12 @@ export default function Home() {
 
                   {/* --- SECCIÓN 3: CONNECTION --- */}
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24 relative">
-                     <div className="absolute left-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none">
-                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter -translate-x-12">CONN</h2>
+                     <div className="absolute left-0 top-1/2 -translate-y-1/2 -z-10 opacity-5 pointer-events-none select-none">
+                       <h2 className="text-[25vh] font-black text-white leading-none tracking-tighter -translate-x-20">CONNECT</h2>
                     </div>
 
                     <FadeIn x={-50}>
-                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 left-0">02</h2>
+                      <h2 className="text-7xl font-black mb-4 text-white/10 uppercase absolute -top-24 left-12">02</h2>
                       <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">NO ESTÁS<br/>SOLO</h3>
                       <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
                         Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar al club.
@@ -215,12 +216,12 @@ export default function Home() {
 
                   {/* --- SECCIÓN 4: BOOKING --- */}
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
-                     <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none">
-                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter translate-x-12">VIP</h2>
+                     <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-5 pointer-events-none select-none">
+                       <h2 className="text-[25vh] font-black text-white leading-none tracking-tighter translate-x-20">ACCESS</h2>
                     </div>
 
                     <FadeIn x={50}>
-                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">03</h2>
+                      <h2 className="text-7xl font-black mb-4 text-white/10 uppercase absolute -top-24 right-12">03</h2>
                       <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">ACCESO<br/>INSTANTÁNEO</h3>
                       <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
                         Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar de la noche.
@@ -231,7 +232,7 @@ export default function Home() {
                   {/* --- SECCIÓN 5: LIVE IT --- */}
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24 relative">
                     <FadeIn x={-50}>
-                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 left-0">04</h2>
+                      <h2 className="text-7xl font-black mb-4 text-white/10 uppercase absolute -top-24 left-12">04</h2>
                       <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">MOMENTOS<br/>ÚNICOS</h3>
                       <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
                         Experiencias inmersivas diseñadas para ser recordadas (o no). Tú decides.
@@ -242,7 +243,7 @@ export default function Home() {
                   {/* --- SECCIÓN 6: SECURE --- */}
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
                     <FadeIn x={50}>
-                       <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">05</h2>
+                       <h2 className="text-7xl font-black mb-4 text-white/10 uppercase absolute -top-24 right-12">05</h2>
                       <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">100%<br/>SEGURO</h3>
                       <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
                         Entradas verificadas con blockchain. Tu noche está garantizada y protegida.
