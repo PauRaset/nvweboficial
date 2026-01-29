@@ -59,14 +59,13 @@ function Iphone() {
       const isEven = textureIndex % 2 === 0;
       let targetPosX = isEven ? 1.3 : -1.3;
 
-      // 2. ROTACIÓN Z (MIRADA AL CENTRO)
-      // Calculamos la base de la rotación (las vueltas de 360º)
+      // 2. ROTACIÓN Z (MIRADA CORREGIDA AL CENTRO)
       const baseRotation = textureIndex * Math.PI * 2;
       
-      // Ajustamos la mirada: 
-      // Si está a la derecha (isEven), rotamos un poco hacia la izquierda (-0.4)
-      // Si está a la izquierda (!isEven), rotamos un poco hacia la derecha (0.4)
-      const lookAtCenterOffset = isEven ? -0.4 : 0.4;
+      // CORRECCIÓN AQUÍ:
+      // Si está a la DERECHA (isEven), rotamos POSITIVO para que la pantalla mire al centro.
+      // Si está a la IZQUIERDA (!isEven), rotamos NEGATIVO para que la pantalla mire al centro.
+      const lookAtCenterOffset = isEven ? 0.4 : -0.4;
       
       const targetRotationZ = baseRotation + lookAtCenterOffset;
 
@@ -112,8 +111,9 @@ export default function Home() {
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-screen px-8">
+                  {/* Secciones de texto (igual que antes) */}
                   <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
-                    <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
+                    <h1 className="text-7xl font-bold mb-4 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">NightVibe</h1>
                     <p className="text-xl text-gray-400">Tu ciudad, tus reglas.</p>
                   </section>
 
