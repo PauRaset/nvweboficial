@@ -1,41 +1,59 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Float } from '@react-three/drei';
-import { useRef, Suspense, useMemo } from 'react';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
+import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
-// Componente para las luces de fondo que se mueven
-function BackgroundLights() {
-  const light1 = useRef<THREE.Mesh>(null);
-  const light2 = useRef<THREE.Mesh>(null);
-  const scroll = useScroll();
+// --- COMPONENTE DE ESTRELLAS (NATIVO, SIN LIBRERÍAS) ---
+function Stars(props: any) {
+  const ref = useRef<THREE.Points>(null);
+  
+  // Generamos 2000 estrellas en una esfera aleatoria
+  const [sphere] = useState(() => {
+    const points = new Float32Array(2000 * 3);
+    for (let i = 0; i < points.length; i++) {
+      // Matemáticas para distribuir puntos en una esfera (radio 1.5)
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+      const r = 1.5 + Math.random() * 0.5; // Radio variable entre 1.5 y 2.0
+      
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.sin(phi) * Math.sin(theta);
+      const z = r * Math.cos(phi);
 
-  useFrame((state) => {
-    const r = scroll.offset;
-    if (light1.current) {
-      light1.current.position.set(-2 - r * 2, 1 + r, -2);
-      light1.current.scale.setScalar(2 + Math.sin(state.clock.elapsedTime) * 0.5);
+      points[i * 3] = x;
+      points[i * 3 + 1] = y;
+      points[i * 3 + 2] = z;
     }
-    if (light2.current) {
-      light2.current.position.set(2 + r * 2, -1 - r, -2);
-      light2.current.scale.setScalar(1.5 + Math.cos(state.clock.elapsedTime) * 0.5);
+    return points;
+  });
+
+  useFrame((state, delta) => {
+    if (ref.current) {
+      // Rotación lenta del cielo
+      ref.current.rotation.x -= delta / 15;
+      ref.current.rotation.y -= delta / 20;
     }
   });
 
   return (
-    <>
-      <mesh ref={light1} position={[-2, 1, -2]}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color="#4400ff" transparent opacity={0.15} />
-      </mesh>
-      <mesh ref={light2} position={[2, -1, -2]}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color="#ff0088" transparent opacity={0.1} />
-      </mesh>
-    </>
+    <group rotation={[0, 0, Math.PI / 4]}>
+      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+        <PointMaterial
+          transparent
+          color="#a0a0ff" // Un blanco azulado para las estrellas
+          size={0.008}    // Tamaño pequeño y elegante
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.8}
+        />
+      </Points>
+    </group>
   );
 }
 
@@ -45,12 +63,8 @@ function Iphone() {
   const scroll = useScroll();
 
   const textures = [
-    useTexture('/1.jpg'),
-    useTexture('/2.jpg'),
-    useTexture('/3.jpg'),
-    useTexture('/4.jpg'),
-    useTexture('/5.jpg'),
-    useTexture('/6.jpg'),
+    useTexture('/1.jpg'), useTexture('/2.jpg'), useTexture('/3.jpg'),
+    useTexture('/4.jpg'), useTexture('/5.jpg'), useTexture('/6.jpg'),
     useTexture('/7.jpg'),
   ];
 
@@ -71,10 +85,7 @@ function Iphone() {
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
-            node.material = new THREE.MeshBasicMaterial({
-              map: activeTexture,
-              toneMapped: false,
-            });
+            node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
           if (node.material.map !== activeTexture) {
             node.material.map = activeTexture;
@@ -84,7 +95,7 @@ function Iphone() {
       });
 
       const isEven = textureIndex % 2 === 0;
-      let targetPosX = isEven ? 1.3 : -1.3;
+      const targetPosX = isEven ? 1.3 : -1.3;
       const baseRotation = textureIndex * Math.PI * 2;
       const lookAtCenterOffset = isEven ? 0.4 : -0.4;
       const targetRotationZ = baseRotation + lookAtCenterOffset;
@@ -113,71 +124,96 @@ function Iphone() {
 
 export default function Home() {
   return (
-    <main className="w-full h-full bg-[#050505]">
+    // Color de fondo base: Un azul oscuro profundo (Midnight Blue) en lugar de negro puro
+    <main className="w-full h-full bg-[#0b0c15]">
+      
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-10 py-6 backdrop-blur-md bg-black/10">
-        <div className="text-white font-bold text-2xl tracking-tighter">NIGHTVIBE</div>
-        <div className="hidden md:flex gap-8 text-white/60 text-sm font-medium">
-          <a href="#" className="hover:text-white transition-colors">Eventos</a>
-          <a href="#" className="hover:text-white transition-colors">Clubs</a>
-          <a href="#" className="hover:text-white transition-colors">VIP</a>
+      <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
+        <div className="text-white font-black text-2xl tracking-[0.2em] italic">NIGHTVIBE</div>
+        <div className="hidden lg:flex gap-12 text-white/60 text-[11px] uppercase tracking-[0.2em] font-semibold">
+          <a href="#" className="hover:text-purple-400 transition-colors">Experience</a>
+          <a href="#" className="hover:text-purple-400 transition-colors">The Map</a>
+          <a href="#" className="hover:text-purple-400 transition-colors">VIP Access</a>
         </div>
-        <button className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
-          GET THE APP
+        <button className="border border-white/10 bg-white/5 text-white px-6 py-2 rounded-full text-[10px] font-black tracking-widest uppercase hover:bg-purple-600 hover:border-purple-600 transition-all">
+          Join Now
         </button>
       </nav>
 
-      <div className="fixed top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#050505_100%)]">
-        <Canvas camera={{ position: [0, 0, 4], fov: 35 }}>
+      {/* BACKGROUND CANVAS */}
+      <div className="fixed top-0 left-0 w-full h-full">
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
+          {/* Niebla para dar profundidad y evitar el negro plano */}
+          <color attach="background" args={['#0b0c15']} />
+          <fog attach="fog" args={['#0b0c15', 5, 15]} />
+          
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
-              <BackgroundLights />
+              
+              {/* ESTRELLAS DE FONDO */}
+              <Stars />
+              
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                <div className="w-screen px-12 md:px-24">
+                <div className="w-screen font-sans">
                   
-                  <section className="h-screen flex flex-col justify-center items-start max-w-2xl">
-                    <h1 className="text-8xl font-black mb-4 tracking-tighter text-white">
-                      Night<span className="text-purple-600">Vibe</span>
+                  <section className="h-screen flex flex-col justify-center px-12 md:px-24">
+                    <span className="text-purple-400 font-bold tracking-[0.5em] mb-4 text-xs uppercase">Welcome to the future</span>
+                    <h1 className="text-[10vw] leading-[0.9] font-black mb-8 tracking-tighter text-white uppercase drop-shadow-lg">
+                      Night<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-400">Vibe</span>
                     </h1>
-                    <p className="text-2xl text-white/40 font-light">Tu ciudad, tus reglas. La noche empieza aquí.</p>
+                    <p className="text-xl text-gray-400 max-w-md">La noche es joven. Tú también. Descúbrela.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white drop-shadow-2xl">Descubre</h2>
-                    <p className="text-xl text-white/50 max-w-md">Acceso exclusivo a los eventos más calientes de la ciudad.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Discovery</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
+                    </p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-start">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Conecta</h2>
-                    <p className="text-xl text-white/50 max-w-md">Rodéate de personas que vibran en tu misma frecuencia.</p>
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Connection</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
+                    </p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Reserva</h2>
-                    <p className="text-xl text-white/50 max-w-md">Mesas VIP y botellas con un solo tap. Olvida las colas.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Booking</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
+                    </p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-start">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">VIVE</h2>
-                    <p className="text-xl text-white/50 max-w-md">Experiencias inmersivas diseñadas para ser recordadas.</p>
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Live It</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Experiencias inmersivas diseñadas para ser recordadas (o no).
+                    </p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Seguridad</h2>
-                    <p className="text-xl text-white/50 max-w-md">Entradas digitales seguras y acceso garantizado.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Secure</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Entradas verificadas con blockchain. Tu noche está garantizada.
+                    </p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-center text-center">
-                    <div className="p-10 rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10">
-                      <h2 className="text-7xl font-black mb-6 italic text-white">READY?</h2>
-                      <p className="text-white/40 mb-10 max-w-xs mx-auto">Únete a la comunidad más exclusiva de la vida nocturna.</p>
-                      <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-12 py-4 rounded-full font-bold text-xl hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] transition-all">
-                        DOWNLOAD NOW
+                  <section className="h-screen flex flex-col justify-center items-center text-center px-12">
+                    <div className="relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
+                      <button className="relative bg-black text-white px-16 py-5 rounded-full font-bold text-xl tracking-wider uppercase border border-white/10">
+                        Download NightVibe
                       </button>
                     </div>
                   </section>
