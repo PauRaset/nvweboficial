@@ -2,29 +2,23 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
+// Importamos los efectos de post-procesado
+import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- ESTRELLAS (FONDO GARANTIZADO) ---
+// --- ESTRELLAS (FONDO GARANTIZADO - INTACTO) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   
   const [positions] = useState(() => {
-    // Generamos 2000 estrellas
     const points = new Float32Array(2000 * 3);
     for (let i = 0; i < points.length; i++) {
-      // X e Y: Esparcidas ampliamente para llenar la pantalla
       const x = (Math.random() - 0.5) * 15; 
       const y = (Math.random() - 0.5) * 15; 
-      
-      // Z (Profundidad): IMPORTANTE
-      // Generamos solo valores negativos (detrás del móvil).
-      // El móvil está en 0. La cámara en 4.
-      // Ponemos las estrellas entre -2 (justo detrás) y -10 (lejos).
       const z = - (Math.random() * 8 + 2); 
-
       points[i * 3] = x;
       points[i * 3 + 1] = y;
       points[i * 3 + 2] = z;
@@ -34,7 +28,6 @@ function Stars(props: any) {
 
   useFrame((state, delta) => {
     if (ref.current) {
-      // Rotación sutil para dar vida
       ref.current.rotation.z -= delta / 20; 
     }
   });
@@ -45,7 +38,7 @@ function Stars(props: any) {
         <PointMaterial
           transparent
           color="#ffffff"
-          size={0.015} // Un poco más visibles
+          size={0.015}
           sizeAttenuation={true}
           depthWrite={false}
           opacity={0.5}
@@ -55,6 +48,7 @@ function Stars(props: any) {
   );
 }
 
+// --- IPHONE (INTACTO) ---
 function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
@@ -82,6 +76,7 @@ function Iphone() {
 
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
+          // El toneMapped: false es CRUCIAL para que el Bloom funcione en la pantalla
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
             node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
@@ -139,11 +134,11 @@ export default function Home() {
 
       {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
-        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
-          {/* Fondo limpio con niebla lejana */}
+        {/* dpr={[1, 1.5]} optimiza rendimiento en pantallas retina */}
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 1.5]}>
           <color attach="background" args={['#0b0c15']} />
-          {/* Niebla ajustada para empezar más lejos (z=10) y terminar en (z=25) */}
-          <fog attach="fog" args={['#0b0c15', 8, 25]} />
+          {/* Niebla un poco más densa para resaltar el bloom */}
+          <fog attach="fog" args={['#0b0c15', 5, 20]} />
           
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
@@ -154,6 +149,22 @@ export default function Home() {
               <Stars />
               <Iphone />
               
+              {/* --- EFECTOS DE CÁMARA (POST-PROCESSING) --- */}
+              {/* disableNormalPass mejora rendimiento si no lo necesitas */}
+              <EffectComposer disableNormalPass>
+                {/* Bloom: Crea el resplandor de neón en la pantalla y estrellas */}
+                <Bloom 
+                    luminanceThreshold={0.2} // Qué tan brillante debe ser algo para brillar (bajo = brilla todo)
+                    mipmapBlur // Suavizado de alta calidad
+                    intensity={0.5} // Fuerza del brillo
+                    radius={0.5} // Radio de expansión de la luz
+                />
+                {/* Vignette: Oscurece bordes para efecto cine */}
+                <Vignette eskil={false} offset={0.1} darkness={1.1} />
+                {/* Noise: Un poco de grano para realismo, evita el look "plástico" */}
+                <Noise opacity={0.03} /> 
+              </EffectComposer>
+
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-screen font-sans">
                   
@@ -166,43 +177,53 @@ export default function Home() {
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Discovery</h2>
-                    <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
-                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                      El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
-                    </p>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Discovery</h2>
+                    <div className="relative z-10">
+                        <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
+                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
+                        </p>
+                    </div>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Connection</h2>
-                    <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
-                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                      Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
-                    </p>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0">Connection</h2>
+                    <div className="relative z-10">
+                        <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
+                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
+                        </p>
+                    </div>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Booking</h2>
-                    <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
-                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                      Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
-                    </p>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Booking</h2>
+                    <div className="relative z-10">
+                        <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
+                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
+                        </p>
+                    </div>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Live It</h2>
-                    <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
-                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                      Experiencias inmersivas diseñadas para ser recordadas (o no).
-                    </p>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0">Live It</h2>
+                    <div className="relative z-10">
+                        <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
+                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Experiencias inmersivas diseñadas para ser recordadas (o no).
+                        </p>
+                    </div>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Secure</h2>
-                    <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
-                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                      Entradas verificadas con blockchain. Tu noche está garantizada.
-                    </p>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Secure</h2>
+                    <div className="relative z-10">
+                        <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
+                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Entradas verificadas con blockchain. Tu noche está garantizada.
+                        </p>
+                    </div>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-center text-center px-12">
