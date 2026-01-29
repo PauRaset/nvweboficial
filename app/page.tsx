@@ -1,47 +1,30 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial, useProgress } from '@react-three/drei';
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- COMPONENTE LOADER (PANTALLA DE CARGA) ---
-function Loader() {
-  const { progress } = useProgress();
-  
-  return (
-    <div 
-      className={`fixed top-0 left-0 w-full h-full z-[200] bg-black flex flex-col items-center justify-center transition-opacity duration-1000 ${progress === 100 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-    >
-      <div className="text-white font-black text-6xl tracking-tighter mb-4">
-        {Math.round(progress)}%
-      </div>
-      <div className="w-64 h-1 bg-white/20 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-purple-600 transition-all duration-300 ease-out"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <p className="text-white/40 text-xs uppercase tracking-[0.3em] mt-4 font-bold">
-        Loading Experience
-      </p>
-    </div>
-  );
-}
-
-// --- ESTRELLAS ---
+// --- ESTRELLAS (FONDO GARANTIZADO) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   
   const [positions] = useState(() => {
+    // Generamos 2000 estrellas
     const points = new Float32Array(2000 * 3);
     for (let i = 0; i < points.length; i++) {
+      // X e Y: Esparcidas ampliamente para llenar la pantalla
       const x = (Math.random() - 0.5) * 15; 
       const y = (Math.random() - 0.5) * 15; 
+      
+      // Z (Profundidad): IMPORTANTE
+      // Generamos solo valores negativos (detrás del móvil).
+      // El móvil está en 0. La cámara en 4.
+      // Ponemos las estrellas entre -2 (justo detrás) y -10 (lejos).
       const z = - (Math.random() * 8 + 2); 
+
       points[i * 3] = x;
       points[i * 3 + 1] = y;
       points[i * 3 + 2] = z;
@@ -51,6 +34,7 @@ function Stars(props: any) {
 
   useFrame((state, delta) => {
     if (ref.current) {
+      // Rotación sutil para dar vida
       ref.current.rotation.z -= delta / 20; 
     }
   });
@@ -58,13 +42,19 @@ function Stars(props: any) {
   return (
     <group rotation={[0, 0, 0]}>
       <Points ref={ref} positions={positions} stride={3} frustumCulled={false} {...props}>
-        <PointMaterial transparent color="#ffffff" size={0.015} sizeAttenuation={true} depthWrite={false} opacity={0.5} />
+        <PointMaterial
+          transparent
+          color="#ffffff"
+          size={0.015} // Un poco más visibles
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.5}
+        />
       </Points>
     </group>
   );
 }
 
-// --- IPHONE ---
 function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
@@ -134,8 +124,7 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15]">
       
-      <Loader />
-
+      {/* NAVBAR */}
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
         <div className="text-white font-black text-2xl tracking-[0.2em] italic">NIGHTVIBE</div>
         <div className="hidden lg:flex gap-12 text-white/60 text-[11px] uppercase tracking-[0.2em] font-semibold">
@@ -148,25 +137,23 @@ export default function Home() {
         </button>
       </nav>
 
+      {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
-        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 1.5]}>
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
+          {/* Fondo limpio con niebla lejana */}
           <color attach="background" args={['#0b0c15']} />
-          <fog attach="fog" args={['#0b0c15', 5, 20]} />
+          {/* Niebla ajustada para empezar más lejos (z=10) y terminar en (z=25) */}
+          <fog attach="fog" args={['#0b0c15', 8, 25]} />
+          
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
+              
               <Stars />
               <Iphone />
               
-              {/* --- AQUÍ ESTABA EL ERROR: CORREGIDO 'enableNormalPass={false}' --- */}
-              <EffectComposer enableNormalPass={false}>
-                <Bloom luminanceThreshold={0.2} mipmapBlur intensity={0.5} radius={0.5} />
-                <Vignette eskil={false} offset={0.1} darkness={1.1} />
-                <Noise opacity={0.03} /> 
-              </EffectComposer>
-
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-screen font-sans">
                   
@@ -179,53 +166,43 @@ export default function Home() {
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Discovery</h2>
-                    <div className="relative z-10">
-                        <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
-                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                        El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
-                        </p>
-                    </div>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Discovery</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
+                    </p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0">Connection</h2>
-                    <div className="relative z-10">
-                        <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
-                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                        Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
-                        </p>
-                    </div>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Connection</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
+                    </p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Booking</h2>
-                    <div className="relative z-10">
-                        <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
-                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                        Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
-                        </p>
-                    </div>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Booking</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
+                    </p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0">Live It</h2>
-                    <div className="relative z-10">
-                        <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
-                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                        Experiencias inmersivas diseñadas para ser recordadas (o no).
-                        </p>
-                    </div>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Live It</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Experiencias inmersivas diseñadas para ser recordadas (o no).
+                    </p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0">Secure</h2>
-                    <div className="relative z-10">
-                        <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
-                        <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                        Entradas verificadas con blockchain. Tu noche está garantizada.
-                        </p>
-                    </div>
+                    <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/10">Secure</h2>
+                    <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
+                    <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                      Entradas verificadas con blockchain. Tu noche está garantizada.
+                    </p>
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-center text-center px-12">
