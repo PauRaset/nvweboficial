@@ -4,7 +4,6 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
-// Importamos Framer Motion para animar los textos HTML
 import { motion } from 'framer-motion';
 
 const MODEL_PATH = '/iphone.glb';
@@ -13,17 +12,17 @@ const MODEL_PATH = '/iphone.glb';
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }} // Empieza invisible y borroso
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }} // Se enfoca y sube
+      initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 1, delay: delay, ease: [0.22, 1, 0.36, 1] }} // Curva de animación "Luxury"
+      transition={{ duration: 1, delay: delay, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
   );
 }
 
-// --- ESTRELLAS (INTACTO) ---
+// --- ESTRELLAS (INTACTO - NO TOCAR) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   
@@ -62,7 +61,7 @@ function Stars(props: any) {
   );
 }
 
-// --- IPHONE (INTACTO) ---
+// --- IPHONE (INTACTO - NO TOCAR) ---
 function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
@@ -132,8 +131,8 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15] font-sans">
       
-      {/* NAVBAR: Diseño Minimalista */}
-      <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-12 py-6 mix-blend-difference text-white">
+      {/* NAVBAR: Texto blanco forzado */}
+      <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-12 py-6 text-white">
         <div className="font-bold text-xl tracking-tighter">NIGHTVIBE®</div>
         <div className="hidden md:flex gap-8 text-xs font-medium tracking-widest uppercase opacity-70">
           <a href="#" className="hover:opacity-100 transition-opacity">Manifesto</a>
@@ -160,7 +159,7 @@ export default function Home() {
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                <div className="w-screen">
+                <div className="w-screen text-white"> {/* IMPORTANTE: text-white aquí fuerza el color */}
                   
                   {/* SECCIÓN 1: HERO */}
                   <section className="h-screen flex flex-col justify-center px-8 md:px-24">
@@ -183,7 +182,7 @@ export default function Home() {
                     <FadeIn>
                        <div className="relative">
                           {/* Número decorativo gigante */}
-                          <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none">01</span>
+                          <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none pointer-events-none">01</span>
                           <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase text-white tracking-tighter">
                             Disco<span className="text-purple-500">very</span>
                           </h2>
@@ -198,7 +197,7 @@ export default function Home() {
                   <section className="h-screen flex flex-col justify-center items-start px-8 md:px-24">
                     <FadeIn>
                       <div className="relative">
-                         <span className="absolute -top-20 -left-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none">02</span>
+                         <span className="absolute -top-20 -left-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none pointer-events-none">02</span>
                          <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase text-white tracking-tighter">
                            Conn<span className="text-blue-500">ect</span>
                          </h2>
@@ -213,7 +212,7 @@ export default function Home() {
                   <section className="h-screen flex flex-col justify-center items-end text-right px-8 md:px-24">
                     <FadeIn>
                       <div className="relative">
-                         <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none">03</span>
+                         <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none pointer-events-none">03</span>
                          <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase text-white tracking-tighter">
                            VIP<span className="text-pink-500">Access</span>
                          </h2>
@@ -228,7 +227,7 @@ export default function Home() {
                   <section className="h-screen flex flex-col justify-center items-start px-8 md:px-24">
                     <FadeIn>
                       <div className="relative">
-                         <span className="absolute -top-20 -left-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none">04</span>
+                         <span className="absolute -top-20 -left-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none pointer-events-none">04</span>
                          <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase text-white tracking-tighter">
                            Live<span className="text-yellow-500">It</span>
                          </h2>
@@ -243,7 +242,7 @@ export default function Home() {
                   <section className="h-screen flex flex-col justify-center items-end text-right px-8 md:px-24">
                     <FadeIn>
                       <div className="relative">
-                         <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none">05</span>
+                         <span className="absolute -top-20 -right-4 text-[12rem] font-black text-white/[0.03] -z-10 leading-none pointer-events-none">05</span>
                          <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase text-white tracking-tighter">
                            Sec<span className="text-green-500">ure</span>
                          </h2>
