@@ -4,19 +4,26 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
-import * as random from 'maath/random/dist/maath-random.esm';
 
 const MODEL_PATH = '/iphone.glb';
 
-// Fondo de partículas cinéticas
+// Fondo de partículas nativo (sin librerías externas)
 function Particles() {
   const ref = useRef<THREE.Points>(null);
-  const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }));
+  
+  // Generamos 5000 puntos aleatorios de forma nativa
+  const sphere = useMemo(() => {
+    const points = new Float32Array(5000 * 3);
+    for (let i = 0; i < points.length; i++) {
+      points[i] = (Math.random() - 0.5) * 10; // Esparcidas en un cubo de 10x10
+    }
+    return points;
+  }, []);
   
   useFrame((state, delta) => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 10;
-      ref.current.rotation.y -= delta / 15;
+      ref.current.rotation.x -= delta / 15;
+      ref.current.rotation.y -= delta / 20;
     }
   });
 
@@ -26,10 +33,10 @@ function Particles() {
         <PointMaterial
           transparent
           color="#ffffff"
-          size={0.005}
+          size={0.015}
           sizeAttenuation={true}
           depthWrite={false}
-          opacity={0.4}
+          opacity={0.3}
         />
       </Points>
     </group>
@@ -122,7 +129,6 @@ export default function Home() {
         <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
           <color attach="background" args={['#020203']} />
           <ambientLight intensity={1} />
-          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
           <Environment preset="night" />
           
           <Suspense fallback={null}>
@@ -141,7 +147,7 @@ export default function Home() {
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white opacity-20 outline-text">Discovery</h2>
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white opacity-20">Discovery</h2>
                     <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">The city's heartbeat, curated for you. Every club, every vibe, one app.</p>
                   </section>
 
@@ -151,7 +157,7 @@ export default function Home() {
                   </section>
 
                   <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-transparent border-b border-purple-500/30 text-white">Booking</h2>
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white">Booking</h2>
                     <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">VIP tables in seconds. No lines, no drama. Just pure access.</p>
                   </section>
 
@@ -169,7 +175,7 @@ export default function Home() {
                     <div className="relative group">
                       <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
                       <button className="relative bg-black text-white px-20 py-6 rounded-full font-black text-2xl tracking-tighter uppercase border border-white/10">
-                        Download NightVibe
+                        Download Now
                       </button>
                     </div>
                   </section>
