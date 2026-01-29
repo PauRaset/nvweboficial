@@ -1,15 +1,40 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
-// Importamos los efectos de post-procesado
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial, useProgress } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- ESTRELLAS (FONDO GARANTIZADO - INTACTO) ---
+// --- COMPONENTE LOADER (PANTALLA DE CARGA) ---
+function Loader() {
+  const { progress } = useProgress();
+  
+  // Si la carga está completa (100%), ocultamos el loader con CSS (opacity-0)
+  // pointer-events-none es vital para poder hacer click en la web después
+  return (
+    <div 
+      className={`fixed top-0 left-0 w-full h-full z-[200] bg-black flex flex-col items-center justify-center transition-opacity duration-1000 ${progress === 100 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+    >
+      <div className="text-white font-black text-6xl tracking-tighter mb-4">
+        {Math.round(progress)}%
+      </div>
+      <div className="w-64 h-1 bg-white/20 rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-purple-600 transition-all duration-300 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <p className="text-white/40 text-xs uppercase tracking-[0.3em] mt-4 font-bold">
+        Loading Experience
+      </p>
+    </div>
+  );
+}
+
+// --- ESTRELLAS ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   
@@ -35,20 +60,13 @@ function Stars(props: any) {
   return (
     <group rotation={[0, 0, 0]}>
       <Points ref={ref} positions={positions} stride={3} frustumCulled={false} {...props}>
-        <PointMaterial
-          transparent
-          color="#ffffff"
-          size={0.015}
-          sizeAttenuation={true}
-          depthWrite={false}
-          opacity={0.5}
-        />
+        <PointMaterial transparent color="#ffffff" size={0.015} sizeAttenuation={true} depthWrite={false} opacity={0.5} />
       </Points>
     </group>
   );
 }
 
-// --- IPHONE (INTACTO) ---
+// --- IPHONE ---
 function Iphone() {
   const { scene, nodes } = useGLTF(MODEL_PATH);
   const groupRef = useRef<THREE.Group>(null);
@@ -76,7 +94,6 @@ function Iphone() {
 
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
-          // El toneMapped: false es CRUCIAL para que el Bloom funcione en la pantalla
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
             node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
@@ -119,7 +136,9 @@ export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15]">
       
-      {/* NAVBAR */}
+      {/* --- AÑADIMOS EL LOADER AQUÍ --- */}
+      <Loader />
+
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
         <div className="text-white font-black text-2xl tracking-[0.2em] italic">NIGHTVIBE</div>
         <div className="hidden lg:flex gap-12 text-white/60 text-[11px] uppercase tracking-[0.2em] font-semibold">
@@ -132,36 +151,20 @@ export default function Home() {
         </button>
       </nav>
 
-      {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
-        {/* dpr={[1, 1.5]} optimiza rendimiento en pantallas retina */}
         <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 1.5]}>
           <color attach="background" args={['#0b0c15']} />
-          {/* Niebla un poco más densa para resaltar el bloom */}
           <fog attach="fog" args={['#0b0c15', 5, 20]} />
-          
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
-              
               <Stars />
               <Iphone />
-              
-              {/* --- EFECTOS DE CÁMARA (POST-PROCESSING) --- */}
-              {/* disableNormalPass mejora rendimiento si no lo necesitas */}
               <EffectComposer disableNormalPass>
-                {/* Bloom: Crea el resplandor de neón en la pantalla y estrellas */}
-                <Bloom 
-                    luminanceThreshold={0.2} // Qué tan brillante debe ser algo para brillar (bajo = brilla todo)
-                    mipmapBlur // Suavizado de alta calidad
-                    intensity={0.5} // Fuerza del brillo
-                    radius={0.5} // Radio de expansión de la luz
-                />
-                {/* Vignette: Oscurece bordes para efecto cine */}
+                <Bloom luminanceThreshold={0.2} mipmapBlur intensity={0.5} radius={0.5} />
                 <Vignette eskil={false} offset={0.1} darkness={1.1} />
-                {/* Noise: Un poco de grano para realismo, evita el look "plástico" */}
                 <Noise opacity={0.03} /> 
               </EffectComposer>
 
