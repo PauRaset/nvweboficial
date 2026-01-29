@@ -1,41 +1,38 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Float } from '@react-three/drei';
-import { useRef, Suspense, useMemo } from 'react';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
+import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
+import * as random from 'maath/random/dist/maath-random.esm';
 
 const MODEL_PATH = '/iphone.glb';
 
-// Componente para las luces de fondo que se mueven
-function BackgroundLights() {
-  const light1 = useRef<THREE.Mesh>(null);
-  const light2 = useRef<THREE.Mesh>(null);
-  const scroll = useScroll();
-
-  useFrame((state) => {
-    const r = scroll.offset;
-    if (light1.current) {
-      light1.current.position.set(-2 - r * 2, 1 + r, -2);
-      light1.current.scale.setScalar(2 + Math.sin(state.clock.elapsedTime) * 0.5);
-    }
-    if (light2.current) {
-      light2.current.position.set(2 + r * 2, -1 - r, -2);
-      light2.current.scale.setScalar(1.5 + Math.cos(state.clock.elapsedTime) * 0.5);
+// Fondo de partículas cinéticas
+function Particles() {
+  const ref = useRef<THREE.Points>(null);
+  const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 1.5 }));
+  
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.rotation.x -= delta / 10;
+      ref.current.rotation.y -= delta / 15;
     }
   });
 
   return (
-    <>
-      <mesh ref={light1} position={[-2, 1, -2]}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color="#4400ff" transparent opacity={0.15} />
-      </mesh>
-      <mesh ref={light2} position={[2, -1, -2]}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color="#ff0088" transparent opacity={0.1} />
-      </mesh>
-    </>
+    <group rotation={[0, 0, Math.PI / 4]}>
+      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false}>
+        <PointMaterial
+          transparent
+          color="#ffffff"
+          size={0.005}
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.4}
+        />
+      </Points>
+    </group>
   );
 }
 
@@ -45,12 +42,8 @@ function Iphone() {
   const scroll = useScroll();
 
   const textures = [
-    useTexture('/1.jpg'),
-    useTexture('/2.jpg'),
-    useTexture('/3.jpg'),
-    useTexture('/4.jpg'),
-    useTexture('/5.jpg'),
-    useTexture('/6.jpg'),
+    useTexture('/1.jpg'), useTexture('/2.jpg'), useTexture('/3.jpg'),
+    useTexture('/4.jpg'), useTexture('/5.jpg'), useTexture('/6.jpg'),
     useTexture('/7.jpg'),
   ];
 
@@ -71,10 +64,7 @@ function Iphone() {
       Object.values(nodes).forEach((node: any) => {
         if (node.isMesh && node.name === 'object010_scr_0') {
           if (!(node.material instanceof THREE.MeshBasicMaterial)) {
-            node.material = new THREE.MeshBasicMaterial({
-              map: activeTexture,
-              toneMapped: false,
-            });
+            node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
           if (node.material.map !== activeTexture) {
             node.material.map = activeTexture;
@@ -84,7 +74,7 @@ function Iphone() {
       });
 
       const isEven = textureIndex % 2 === 0;
-      let targetPosX = isEven ? 1.3 : -1.3;
+      const targetPosX = isEven ? 1.3 : -1.3;
       const baseRotation = textureIndex * Math.PI * 2;
       const lookAtCenterOffset = isEven ? 0.4 : -0.4;
       const targetRotationZ = baseRotation + lookAtCenterOffset;
@@ -113,71 +103,73 @@ function Iphone() {
 
 export default function Home() {
   return (
-    <main className="w-full h-full bg-[#050505]">
+    <main className="w-full h-full bg-[#020203]">
       {/* NAVBAR */}
-      <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-10 py-6 backdrop-blur-md bg-black/10">
-        <div className="text-white font-bold text-2xl tracking-tighter">NIGHTVIBE</div>
-        <div className="hidden md:flex gap-8 text-white/60 text-sm font-medium">
-          <a href="#" className="hover:text-white transition-colors">Eventos</a>
-          <a href="#" className="hover:text-white transition-colors">Clubs</a>
-          <a href="#" className="hover:text-white transition-colors">VIP</a>
+      <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
+        <div className="text-white font-black text-2xl tracking-[0.2em]">NIGHTVIBE</div>
+        <div className="hidden lg:flex gap-12 text-white/40 text-[10px] uppercase tracking-[0.3em] font-bold">
+          <a href="#" className="hover:text-purple-500 transition-colors">Experience</a>
+          <a href="#" className="hover:text-purple-500 transition-colors">The Map</a>
+          <a href="#" className="hover:text-purple-500 transition-colors">VIP Access</a>
         </div>
-        <button className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:scale-105 transition-transform">
-          GET THE APP
+        <button className="border border-white/20 text-white px-8 py-2 rounded-full text-[10px] font-black tracking-widest uppercase hover:bg-white hover:text-black transition-all">
+          Join Now
         </button>
       </nav>
 
-      <div className="fixed top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#050505_100%)]">
-        <Canvas camera={{ position: [0, 0, 4], fov: 35 }}>
-          <ambientLight intensity={1.5} />
-          <Environment preset="city" />
+      {/* BACKGROUND CANVAS */}
+      <div className="fixed top-0 left-0 w-full h-full">
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
+          <color attach="background" args={['#020203']} />
+          <ambientLight intensity={1} />
+          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+          <Environment preset="night" />
           
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
-              <BackgroundLights />
+              <Particles />
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                <div className="w-screen px-12 md:px-24">
+                <div className="w-screen font-sans">
                   
-                  <section className="h-screen flex flex-col justify-center items-start max-w-2xl">
-                    <h1 className="text-8xl font-black mb-4 tracking-tighter text-white">
-                      Night<span className="text-purple-600">Vibe</span>
+                  <section className="h-screen flex flex-col justify-center px-12 md:px-24">
+                    <span className="text-purple-500 font-bold tracking-[0.5em] mb-4 text-sm uppercase">Welcome to the future</span>
+                    <h1 className="text-[12vw] leading-[0.8] font-black mb-8 tracking-tighter text-white uppercase">
+                      Night<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">Vibe</span>
                     </h1>
-                    <p className="text-2xl text-white/40 font-light">Tu ciudad, tus reglas. La noche empieza aquí.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white drop-shadow-2xl">Descubre</h2>
-                    <p className="text-xl text-white/50 max-w-md">Acceso exclusivo a los eventos más calientes de la ciudad.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white opacity-20 outline-text">Discovery</h2>
+                    <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">The city's heartbeat, curated for you. Every club, every vibe, one app.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-start">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Conecta</h2>
-                    <p className="text-xl text-white/50 max-w-md">Rodéate de personas que vibran en tu misma frecuencia.</p>
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white">Connection</h2>
+                    <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">Don't just go out. Find your tribe in the neon haze.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Reserva</h2>
-                    <p className="text-xl text-white/50 max-w-md">Mesas VIP y botellas con un solo tap. Olvida las colas.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-transparent border-b border-purple-500/30 text-white">Booking</h2>
+                    <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">VIP tables in seconds. No lines, no drama. Just pure access.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-start">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">VIVE</h2>
-                    <p className="text-xl text-white/50 max-w-md">Experiencias inmersivas diseñadas para ser recordadas.</p>
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-white italic">LIVE IT</h2>
+                    <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">Immersive experiences built for the legends of the night.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-end text-right">
-                    <h2 className="text-6xl font-bold mb-4 uppercase italic text-white">Seguridad</h2>
-                    <p className="text-xl text-white/50 max-w-md">Entradas digitales seguras y acceso garantizado.</p>
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
+                    <h2 className="text-7xl md:text-9xl font-black mb-6 uppercase text-purple-600">Secure</h2>
+                    <p className="text-2xl text-white/60 max-w-md font-light leading-relaxed">Blockchain verified entries. Your night is guaranteed.</p>
                   </section>
 
-                  <section className="h-screen flex flex-col justify-center items-center text-center">
-                    <div className="p-10 rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10">
-                      <h2 className="text-7xl font-black mb-6 italic text-white">READY?</h2>
-                      <p className="text-white/40 mb-10 max-w-xs mx-auto">Únete a la comunidad más exclusiva de la vida nocturna.</p>
-                      <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-12 py-4 rounded-full font-bold text-xl hover:shadow-[0_0_30px_rgba(147,51,234,0.5)] transition-all">
-                        DOWNLOAD NOW
+                  <section className="h-screen flex flex-col justify-center items-center text-center px-12">
+                    <div className="relative group">
+                      <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
+                      <button className="relative bg-black text-white px-20 py-6 rounded-full font-black text-2xl tracking-tighter uppercase border border-white/10">
+                        Download NightVibe
                       </button>
                     </div>
                   </section>
@@ -191,7 +183,6 @@ export default function Home() {
     </main>
   );
 }
-
 
 
 /*
