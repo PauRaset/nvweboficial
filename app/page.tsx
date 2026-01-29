@@ -1,4 +1,167 @@
+
 'use client';
+
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture } from '@react-three/drei';
+import { useRef, Suspense, useMemo } from 'react';
+import * as THREE from 'three';
+
+const MODEL_PATH = '/iphone.glb';
+
+function Iphone() {
+  const { scene, nodes } = useGLTF(MODEL_PATH);
+  const groupRef = useRef<THREE.Group>(null);
+  const scroll = useScroll();
+
+  // Cargamos las 7 imágenes
+  const textures = [
+    useTexture('/1.jpg'),
+    useTexture('/2.jpg'),
+    useTexture('/3.jpg'),
+    useTexture('/4.jpg'),
+    useTexture('/5.jpg'),
+    useTexture('/6.jpg'),
+    useTexture('/7.jpg'),
+  ];
+
+  // Configuración masiva de texturas
+  useMemo(() => {
+    textures.forEach(t => {
+      t.flipY = true;
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.center.set(0.5, 0.5);
+    });
+  }, [textures]);
+
+  useFrame((state, delta) => {
+    if (groupRef.current) {
+      const r = scroll.offset; // 0 a 1
+      const step = 1 / textures.length; // Tamaño de cada sección de scroll
+      
+      // --- LÓGICA DE TEXTURAS AUTOMÁTICA ---
+      const textureIndex = Math.min(Math.floor(r * textures.length), textures.length - 1);
+      const activeTexture = textures[textureIndex];
+
+      Object.values(nodes).forEach((node: any) => {
+        if (node.isMesh && node.name === 'object010_scr_0') {
+          if (!(node.material instanceof THREE.MeshBasicMaterial)) {
+            node.material = new THREE.MeshBasicMaterial({
+              map: activeTexture,
+              toneMapped: false,
+            });
+          }
+          if (node.material.map !== activeTexture) {
+            node.material.map = activeTexture;
+            node.material.needsUpdate = true;
+          }
+        }
+      });
+
+      // --- CÁLCULOS DE MOVIMIENTO DINÁMICO ---
+
+      // 1. ZIG-ZAG AUTOMÁTICO (Derecha <-> Izquierda)
+      // Usamos textureIndex para saber si toca estar a un lado u otro
+      // Si el índice es par (0, 2, 4, 6) -> Derecha (1.3)
+      // Si es impar (1, 3, 5) -> Izquierda (-1.3)
+      const isEven = textureIndex % 2 === 0;
+      let targetPosX = isEven ? 1.3 : -1.3;
+
+      // 2. GIRO Z (Proporcional a 7 imágenes)
+      // Multiplicamos por Math.PI * 10 para que de varias vueltas en el recorrido
+      const targetRotationZ = -0.2 + (r * Math.PI * 10);
+
+      // 3. INERCIA Y (BALANCEO)
+      const dist = targetPosX - groupRef.current.position.x;
+      const targetRotationY = dist * 0.25; 
+
+      // 4. FLOTACIÓN Y EJE X
+      const targetPosY = Math.sin(state.clock.elapsedTime) * 0.1;
+      const targetRotationX = Math.PI / 2;
+
+      // --- APLICACIÓN DE FÍSICAS ---
+      const smoothSpeed = 7 * delta; 
+
+      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, smoothSpeed);
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, smoothSpeed);
+      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotationZ, smoothSpeed);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotationX, smoothSpeed);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotationY, smoothSpeed);
+    }
+  });
+
+  return (
+    <group ref={groupRef} rotation-x={Math.PI / 2}>
+      <Center>
+        <primitive object={scene} scale={0.01} />
+      </Center>
+    </group>
+  );
+}
+
+export default function Home() {
+  return (
+    <main className="w-full h-full bg-black">
+      <div className="fixed top-0 left-0 w-full h-full">
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }}>
+          <ambientLight intensity={2} />
+          <Environment preset="city" />
+          
+          <Suspense fallback={null}>
+            {/* Pages=8 para que el scroll sea largo y relajado con 7 imágenes */}
+            <ScrollControls pages={8} damping={0.25}>
+              <Iphone />
+              
+              <Scroll html style={{ width: '100%', height: '100%' }}>
+                <div className="w-screen px-8">
+                  {/* He generado los huecos para las 7 secciones de texto alternando lados */}
+                  
+                  <section className="h-screen flex flex-col justify-center items-start max-w-lg text-white">
+                    <h1 className="text-7xl font-bold mb-4 tracking-tighter">NightVibe</h1>
+                    <p className="text-xl text-gray-400">La noche cobra vida.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-end text-right text-white">
+                    <h2 className="text-5xl font-bold mb-4">Descubre</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Los mejores clubs a un toque de distancia.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-start text-white">
+                    <h2 className="text-5xl font-bold mb-4">Conecta</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Tu gente, tu música, tu noche.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-end text-right text-white">
+                    <h2 className="text-5xl font-bold mb-4">Reserva</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Sin colas, sin esperas, solo vibra.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-start text-white">
+                    <h2 className="text-5xl font-bold mb-4">VIVE</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Eventos exclusivos cada fin de semana.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-end text-right text-white">
+                    <h2 className="text-5xl font-bold mb-4">Seguridad</h2>
+                    <p className="text-xl text-gray-400 max-w-md">Entradas verificadas y acceso garantizado.</p>
+                  </section>
+
+                  <section className="h-screen flex flex-col justify-center items-center text-center text-white">
+                    <h2 className="text-7xl font-bold mb-6">Únete</h2>
+                    <button className="bg-white text-black px-12 py-4 rounded-full font-bold text-xl hover:scale-105 transition-transform">
+                      App Store
+                    </button>
+                  </section>
+                </div>
+              </Scroll>
+            </ScrollControls>
+          </Suspense>
+        </Canvas>
+      </div>
+    </main>
+  );
+}
+
+/*'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture } from '@react-three/drei';
@@ -102,7 +265,6 @@ export default function Home() {
           <Environment preset="city" />
           
           <Suspense fallback={null}>
-            {/* Pages=4 da más "espacio" de scroll para que no se sienta corto */}
             <ScrollControls pages={4} damping={0.2}>
                <Iphone />
                
@@ -138,7 +300,7 @@ export default function Home() {
       </div>
     </main>
   );
-}
+}*/
 
 
 /*'use client';
