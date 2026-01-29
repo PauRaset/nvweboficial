@@ -2,17 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Reseteo para asegurar pantalla completa real */
+:root {
+  /* Forzamos que el color por defecto sea blanco */
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 11, 12, 21; /* Tu color #0b0c15 */
+  --background-end-rgb: 11, 12, 21;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  /* Aseguramos fondo oscuro por defecto */
+  background-color: #0b0c15; 
+  color: white;
+}
+
+
+/*@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html, body {
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
   background-color: #000;
-  overflow: hidden; /* ScrollControls se encargará del scroll */
+  overflow: hidden; 
 }
 
-/* Quitamos contornos azules al hacer clic */
 canvas {
   outline: none;
-}
+}*/
