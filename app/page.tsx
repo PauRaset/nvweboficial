@@ -1,23 +1,22 @@
 'use client';
 
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial, useProgress } from '@react-three/drei';
-// Efectos visuales (Bloom, Ruido, Viñeta)
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing';
+import { useGLTF, Environment, Center, ScrollControls, useScroll, Scroll, useTexture, Points, PointMaterial } from '@react-three/drei';
 import { useRef, Suspense, useMemo, useState } from 'react';
 import * as THREE from 'three';
-// Importamos Framer Motion para las animaciones de texto
+// Importamos Framer Motion para animar los textos HTML
 import { motion } from 'framer-motion';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- COMPONENTE PARA ANIMAR TEXTOS AL HACER SCROLL ---
-function FadeIn({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) {
+// --- COMPONENTE DE ANIMACIÓN REUTILIZABLE ---
+// Todo lo que envuelvas con esto aparecerá suavemente al hacer scroll
+function FadeIn({ children, delay = 0, x = 0 }: { children: React.ReactNode, delay?: number, x?: number }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
+      initial={{ opacity: 0, y: 40, x: x }}
+      whileInView={{ opacity: 1, y: 0, x: 0 }}
+      viewport={{ once: true, margin: "-100px" }} // Se activa 100px antes de entrar
       transition={{ duration: 0.8, delay: delay, ease: "easeOut" }}
     >
       {children}
@@ -25,37 +24,40 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode, delay?: nu
   );
 }
 
-// --- LOADER ---
-function Loader() {
-  const { progress } = useProgress();
-  return (
-    <div className={`fixed top-0 left-0 w-full h-full z-[200] bg-[#050505] flex flex-col items-center justify-center transition-opacity duration-1000 ${progress === 100 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-      <div className="text-white font-black text-6xl tracking-tighter mb-4">{Math.round(progress)}%</div>
-      <div className="w-64 h-1 bg-white/10 rounded-full overflow-hidden">
-        <div className="h-full bg-purple-600 transition-all duration-300 ease-out" style={{ width: `${progress}%` }} />
-      </div>
-    </div>
-  );
-}
-
-// --- ESTRELLAS ---
+// --- ESTRELLAS (FONDO) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
+  
   const [positions] = useState(() => {
     const points = new Float32Array(2000 * 3);
     for (let i = 0; i < points.length; i++) {
       const x = (Math.random() - 0.5) * 15; 
       const y = (Math.random() - 0.5) * 15; 
       const z = - (Math.random() * 8 + 2); 
-      points[i * 3] = x; points[i * 3 + 1] = y; points[i * 3 + 2] = z;
+      points[i * 3] = x;
+      points[i * 3 + 1] = y;
+      points[i * 3 + 2] = z;
     }
     return points;
   });
-  useFrame((state, delta) => { if (ref.current) ref.current.rotation.z -= delta / 20; });
+
+  useFrame((state, delta) => {
+    if (ref.current) {
+      ref.current.rotation.z -= delta / 20; 
+    }
+  });
+
   return (
     <group rotation={[0, 0, 0]}>
       <Points ref={ref} positions={positions} stride={3} frustumCulled={false} {...props}>
-        <PointMaterial transparent color="#ffffff" size={0.015} sizeAttenuation={true} depthWrite={false} opacity={0.5} />
+        <PointMaterial
+          transparent
+          color="#ffffff"
+          size={0.015}
+          sizeAttenuation={true}
+          depthWrite={false}
+          opacity={0.5}
+        />
       </Points>
     </group>
   );
@@ -74,7 +76,11 @@ function Iphone() {
   ];
 
   useMemo(() => {
-    textures.forEach(t => { t.flipY = true; t.colorSpace = THREE.SRGBColorSpace; t.center.set(0.5, 0.5); });
+    textures.forEach(t => {
+      t.flipY = true;
+      t.colorSpace = THREE.SRGBColorSpace;
+      t.center.set(0.5, 0.5);
+    });
   }, [textures]);
 
   useFrame((state, delta) => {
@@ -89,7 +95,8 @@ function Iphone() {
             node.material = new THREE.MeshBasicMaterial({ map: activeTexture, toneMapped: false });
           }
           if (node.material.map !== activeTexture) {
-            node.material.map = activeTexture; node.material.needsUpdate = true;
+            node.material.map = activeTexture;
+            node.material.needsUpdate = true;
           }
         }
       });
@@ -97,7 +104,7 @@ function Iphone() {
       const isEven = textureIndex % 2 === 0;
       let targetPosX = isEven ? 1.3 : -1.3;
       const baseRotation = textureIndex * Math.PI * 2;
-      const lookAtCenterOffset = isEven ? 0.4 : -0.4; // ENFOQUE AL CENTRO
+      const lookAtCenterOffset = isEven ? 0.4 : -0.4;
       const targetRotationZ = baseRotation + lookAtCenterOffset;
       const dist = targetPosX - groupRef.current.position.x;
       const targetRotationY = dist * 0.2; 
@@ -125,7 +132,6 @@ function Iphone() {
 export default function Home() {
   return (
     <main className="w-full h-full bg-[#0b0c15]">
-      <Loader />
       
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-16 py-8 border-b border-white/5 backdrop-blur-xl bg-black/20">
@@ -140,29 +146,25 @@ export default function Home() {
         </button>
       </nav>
 
+      {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
-        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 1.5]}>
+        <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
           <color attach="background" args={['#0b0c15']} />
-          <fog attach="fog" args={['#0b0c15', 5, 20]} />
+          <fog attach="fog" args={['#0b0c15', 8, 25]} />
+          
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
           
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
+              
               <Stars />
               <Iphone />
               
-              {/* EFECTOS (Bloom, Vignette) - Corregido para Vercel */}
-              <EffectComposer enableNormalPass={false}>
-                <Bloom luminanceThreshold={0.2} mipmapBlur intensity={0.5} radius={0.5} />
-                <Vignette eskil={false} offset={0.1} darkness={1.1} />
-                <Noise opacity={0.03} /> 
-              </EffectComposer>
-
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-screen font-sans">
                   
-                  {/* SECCIÓN 1: HERO */}
+                  {/* --- SECCIÓN 1: HERO --- */}
                   <section className="h-screen flex flex-col justify-center px-12 md:px-24">
                     <FadeIn delay={0.2}>
                       <span className="text-purple-400 font-bold tracking-[0.5em] mb-4 text-xs uppercase block">Welcome to the future</span>
@@ -177,81 +179,84 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 2: DISCOVERY */}
-                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <FadeIn>
-                      {/* Texto de fondo decorativo */}
-                      <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0 translate-y-12">Discovery</h2>
-                      <div className="relative z-10">
-                          <h3 className="text-4xl font-bold text-white mb-6">ENCUENTRA TU LUGAR</h3>
-                          <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                            El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto.
-                          </p>
-                      </div>
+                  {/* --- SECCIÓN 2: DISCOVERY (Texto a la derecha) --- */}
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
+                    {/* Texto Fantasma (Decorativo) */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none overflow-hidden">
+                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter translate-x-12">DISC</h2>
+                    </div>
+
+                    <FadeIn x={50}>
+                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">01</h2>
+                      <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">ENCUENTRA<br/>TU LUGAR</h3>
+                      <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        El pulso de la ciudad en tu mano. Cada club, cada fiesta, cada secreto revelado en tiempo real.
+                      </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 3: CONNECTION */}
-                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                     <FadeIn>
-                      <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0 translate-y-12">Connection</h2>
-                      <div className="relative z-10">
-                          <h3 className="text-4xl font-bold text-white mb-6">NO ESTÁS SOLO</h3>
-                          <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                            Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar.
-                          </p>
-                      </div>
+                  {/* --- SECCIÓN 3: CONNECTION (Texto a la izquierda) --- */}
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24 relative">
+                     <div className="absolute left-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none">
+                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter -translate-x-12">CONN</h2>
+                    </div>
+
+                    <FadeIn x={-50}>
+                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 left-0">02</h2>
+                      <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">NO ESTÁS<br/>SOLO</h3>
+                      <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Encuentra a tu gente entre el neón y el humo. Conecta antes de llegar al club.
+                      </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 4: BOOKING */}
-                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <FadeIn>
-                      <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0 translate-y-12">Booking</h2>
-                      <div className="relative z-10">
-                          <h3 className="text-4xl font-bold text-white mb-6">ACCESO VIP</h3>
-                          <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                            Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar.
-                          </p>
-                      </div>
+                  {/* --- SECCIÓN 4: BOOKING --- */}
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
+                     <div className="absolute right-0 top-1/2 -translate-y-1/2 -z-10 opacity-10 pointer-events-none select-none">
+                       <h2 className="text-[20vh] font-black text-white leading-none tracking-tighter translate-x-12">VIP</h2>
+                    </div>
+
+                    <FadeIn x={50}>
+                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">03</h2>
+                      <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">ACCESO<br/>INSTANTÁNEO</h3>
+                      <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Mesas exclusivas en segundos. Sin colas, sin esperas, solo disfrutar de la noche.
+                      </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 5: LIVE IT */}
-                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24">
-                    <FadeIn>
-                      <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute left-12 z-0 translate-y-12">Live It</h2>
-                      <div className="relative z-10">
-                          <h3 className="text-4xl font-bold text-white mb-6">MOMENTOS ÚNICOS</h3>
-                          <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                            Experiencias inmersivas diseñadas para ser recordadas (o no).
-                          </p>
-                      </div>
+                  {/* --- SECCIÓN 5: LIVE IT --- */}
+                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-24 relative">
+                    <FadeIn x={-50}>
+                      <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 left-0">04</h2>
+                      <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">MOMENTOS<br/>ÚNICOS</h3>
+                      <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Experiencias inmersivas diseñadas para ser recordadas (o no). Tú decides.
+                      </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 6: SECURE */}
-                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24">
-                    <FadeIn>
-                      <h2 className="text-7xl md:text-9xl font-black mb-2 uppercase text-white/5 pointer-events-none select-none absolute right-12 z-0 translate-y-12">Secure</h2>
-                      <div className="relative z-10">
-                          <h3 className="text-4xl font-bold text-white mb-6">100% SEGURO</h3>
-                          <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-                            Entradas verificadas con blockchain. Tu noche está garantizada.
-                          </p>
-                      </div>
+                  {/* --- SECCIÓN 6: SECURE --- */}
+                  <section className="h-screen flex flex-col justify-center items-end text-right px-12 md:px-24 relative">
+                    <FadeIn x={50}>
+                       <h2 className="text-7xl font-black mb-2 text-white/5 uppercase absolute -top-20 right-0">05</h2>
+                      <h3 className="text-5xl font-bold text-white mb-6 tracking-tight">100%<br/>SEGURO</h3>
+                      <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
+                        Entradas verificadas con blockchain. Tu noche está garantizada y protegida.
+                      </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 7: CTA FINAL */}
-                  <section className="h-screen flex flex-col justify-center items-center text-center px-12">
+                  {/* --- SECCIÓN 7: FINAL CTA --- */}
+                  <section className="h-screen flex flex-col justify-center items-center text-center px-12 relative">
                     <FadeIn>
                       <div className="relative group cursor-pointer">
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
-                        <button className="relative bg-black text-white px-16 py-5 rounded-full font-bold text-xl tracking-wider uppercase border border-white/10">
+                        <button className="relative bg-black text-white px-16 py-5 rounded-full font-bold text-xl tracking-wider uppercase border border-white/10 hover:bg-white hover:text-black transition-colors">
                           Download NightVibe
                         </button>
                       </div>
+                      <p className="mt-8 text-white/30 text-xs uppercase tracking-widest">Available on iOS & Android</p>
                     </FadeIn>
                   </section>
                   
