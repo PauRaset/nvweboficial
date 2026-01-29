@@ -7,24 +7,23 @@ import * as THREE from 'three';
 
 const MODEL_PATH = '/iphone.glb';
 
-// --- COMPONENTE DE ESTRELLAS (NATIVO, SIN LIBRERÍAS) ---
+// --- ESTRELLAS (FONDO GARANTIZADO) ---
 function Stars(props: any) {
   const ref = useRef<THREE.Points>(null);
   
-  // Generamos 2000 estrellas en una esfera aleatoria
-  const [sphere] = useState(() => {
+  const [positions] = useState(() => {
+    // Generamos 2000 estrellas
     const points = new Float32Array(2000 * 3);
     for (let i = 0; i < points.length; i++) {
-      // Matemáticas para distribuir puntos en una esfera (radio 1.5)
-      const u = Math.random();
-      const v = Math.random();
-      const theta = 2 * Math.PI * u;
-      const phi = Math.acos(2 * v - 1);
-      const r = 1.5 + Math.random() * 0.5; // Radio variable entre 1.5 y 2.0
+      // X e Y: Esparcidas ampliamente para llenar la pantalla
+      const x = (Math.random() - 0.5) * 15; 
+      const y = (Math.random() - 0.5) * 15; 
       
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
+      // Z (Profundidad): IMPORTANTE
+      // Generamos solo valores negativos (detrás del móvil).
+      // El móvil está en 0. La cámara en 4.
+      // Ponemos las estrellas entre -2 (justo detrás) y -10 (lejos).
+      const z = - (Math.random() * 8 + 2); 
 
       points[i * 3] = x;
       points[i * 3 + 1] = y;
@@ -35,22 +34,21 @@ function Stars(props: any) {
 
   useFrame((state, delta) => {
     if (ref.current) {
-      // Rotación lenta del cielo
-      ref.current.rotation.x -= delta / 15;
-      ref.current.rotation.y -= delta / 20;
+      // Rotación sutil para dar vida
+      ref.current.rotation.z -= delta / 20; 
     }
   });
 
   return (
-    <group rotation={[0, 0, Math.PI / 4]}>
-      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+    <group rotation={[0, 0, 0]}>
+      <Points ref={ref} positions={positions} stride={3} frustumCulled={false} {...props}>
         <PointMaterial
           transparent
-          color="#a0a0ff" // Un blanco azulado para las estrellas
-          size={0.008}    // Tamaño pequeño y elegante
+          color="#ffffff"
+          size={0.015} // Un poco más visibles
           sizeAttenuation={true}
           depthWrite={false}
-          opacity={0.8}
+          opacity={0.5}
         />
       </Points>
     </group>
@@ -95,7 +93,7 @@ function Iphone() {
       });
 
       const isEven = textureIndex % 2 === 0;
-      const targetPosX = isEven ? 1.3 : -1.3;
+      let targetPosX = isEven ? 1.3 : -1.3;
       const baseRotation = textureIndex * Math.PI * 2;
       const lookAtCenterOffset = isEven ? 0.4 : -0.4;
       const targetRotationZ = baseRotation + lookAtCenterOffset;
@@ -124,7 +122,6 @@ function Iphone() {
 
 export default function Home() {
   return (
-    // Color de fondo base: Un azul oscuro profundo (Midnight Blue) en lugar de negro puro
     <main className="w-full h-full bg-[#0b0c15]">
       
       {/* NAVBAR */}
@@ -143,9 +140,10 @@ export default function Home() {
       {/* BACKGROUND CANVAS */}
       <div className="fixed top-0 left-0 w-full h-full">
         <Canvas camera={{ position: [0, 0, 4], fov: 35 }} dpr={[1, 2]}>
-          {/* Niebla para dar profundidad y evitar el negro plano */}
+          {/* Fondo limpio con niebla lejana */}
           <color attach="background" args={['#0b0c15']} />
-          <fog attach="fog" args={['#0b0c15', 5, 15]} />
+          {/* Niebla ajustada para empezar más lejos (z=10) y terminar en (z=25) */}
+          <fog attach="fog" args={['#0b0c15', 8, 25]} />
           
           <ambientLight intensity={1.5} />
           <Environment preset="city" />
@@ -153,9 +151,7 @@ export default function Home() {
           <Suspense fallback={null}>
             <ScrollControls pages={7} damping={0.3}>
               
-              {/* ESTRELLAS DE FONDO */}
               <Stars />
-              
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
