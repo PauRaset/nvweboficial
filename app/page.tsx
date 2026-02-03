@@ -108,17 +108,17 @@ function Iphone() {
 
 export default function Home() {
   return (
-    <main className="w-full h-full bg-[#0b0c15] font-sans overflow-x-hidden"> {/* overflow-hidden evita scroll horizontal indeseado */}
+    <main className="w-full h-full bg-[#0b0c15] font-sans overflow-x-hidden">
       
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-12 py-6 text-white" style={{ color: 'white' }}>
         <div className="font-bold text-xl tracking-tighter">NIGHTVIBE®</div>
         <div className="hidden md:flex gap-8 text-xs font-medium tracking-widest uppercase opacity-70">
-          <a href="#" className="hover:opacity-100 transition-opacity">Manifesto</a>
-          <a href="#" className="hover:opacity-100 transition-opacity">Locations</a>
-          <a href="#" className="hover:opacity-100 transition-opacity">Membership</a>
+          <a href="#" className="hover:text-purple-400 transition-colors">Manifesto</a>
+          <a href="#" className="hover:text-purple-400 transition-colors">Locations</a>
+          <a href="#" className="hover:text-purple-400 transition-colors">Membership</a>
         </div>
-        <button className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase hover:scale-105 transition-transform">
+        <button className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase hover:scale-105 hover:bg-purple-500 hover:text-white transition-all">
           Get App
         </button>
       </nav>
@@ -137,19 +137,19 @@ export default function Home() {
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                {/* Cambiado w-screen a w-full y añadido max-w-7xl mx-auto para centrar en pantallas gigantes */}
                 <div className="w-full h-full text-white max-w-[1920px] mx-auto" style={{ color: 'white' }}>
                   
                   {/* SECCIÓN 0: HERO */}
-                  {/* pl-8 md:pl-32 lg:pl-60 empuja desde la izquierda hacia el centro */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="flex items-center gap-4 mb-6">
                         <div className="h-[1px] w-12 bg-purple-500"></div>
                         <span className="text-purple-400 font-medium tracking-[0.4em] text-xs uppercase">Est. 2024</span>
                       </div>
-                      <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter uppercase mix-blend-overlay">
-                        Night<br/>Vibe
+                      {/* Gradient en el título principal para dar efecto neón */}
+                      <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter uppercase">
+                        Night<br/>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-purple-400">Vibe</span>
                       </h1>
                       <p className="mt-8 text-xl font-light max-w-md leading-relaxed tracking-wide opacity-70 text-balance">
                         La ciudad nunca duerme. Tú tampoco deberías.
@@ -157,98 +157,98 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 1: EVENT DETAIL (Derecha) */}
-                  {/* pr-8 md:pr-32 lg:pr-64 empuja desde la derecha hacia el centro */}
+                  {/* SECCIÓN 1: EVENT DETAIL (Violeta/Indigo) */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                        <div className="relative flex flex-col items-center text-center max-w-md">
-                          <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">01</span>
-                          <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-                            Event<span className="text-purple-500">Detail</span>
+                          {/* Ghost number con color violeta muy sutil */}
+                          <span className="absolute -top-24 text-[10rem] font-black text-purple-500/10 -z-10 leading-none pointer-events-none">01</span>
+                          <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
+                            Event<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">Detail</span>
                           </h2>
-                          <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">
+                          <h3 className="text-xl md:text-2xl font-bold mb-4 text-purple-100">
                             Todo el evento, en una sola pantalla.
                           </h3>
                           <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
                             Info clara, estética potente y lo que importa: música, hora, lugar, entradas y el ambiente que te espera.
                           </p>
-                          <p className="text-white/80 font-medium mt-6 text-sm tracking-wide uppercase">Entra, siente el vibe y decide.</p>
+                          <p className="text-purple-300 font-medium mt-6 text-sm tracking-wide uppercase">Entra, siente el vibe y decide.</p>
                        </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 2: LISTA DE ASISTENTES (Izquierda) */}
+                  {/* SECCIÓN 2: LISTA DE ASISTENTES (Azul/Cyan) */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">02</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-                           Lista<span className="text-blue-500">Guest</span>
+                         <span className="absolute -top-24 text-[10rem] font-black text-cyan-500/10 -z-10 leading-none pointer-events-none">02</span>
+                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
+                           Lista<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Guest</span>
                          </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">
+                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-cyan-100">
                             No vas solo: mira quién va.
                          </h3>
                          <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
                            Descubre la gente que ya está dentro, tus amigos y nuevas conexiones antes de llegar a la puerta.
                          </p>
-                         <p className="text-white/80 font-medium mt-6 text-sm tracking-wide uppercase">La noche empieza en la lista.</p>
+                         <p className="text-cyan-300 font-medium mt-6 text-sm tracking-wide uppercase">La noche empieza en la lista.</p>
                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 3: MAPA (Derecha) */}
+                  {/* SECCIÓN 3: MAPA (Rosa/Fucsia) */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">03</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-                           Ma<span className="text-pink-500">pa</span>
+                         <span className="absolute -top-24 text-[10rem] font-black text-pink-500/10 -z-10 leading-none pointer-events-none">03</span>
+                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
+                           Ma<span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500">pa</span>
                          </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">
+                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-pink-100">
                             Explora la noche en tiempo real.
                          </h3>
                          <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
                            Eventos cerca de ti, filtros por distancia y un mapa interactivo que te enseña dónde está pasando “algo”.
                          </p>
-                         <p className="text-white/80 font-medium mt-6 text-sm tracking-wide uppercase">Abre el mapa. Encuentra tu plan.</p>
+                         <p className="text-pink-300 font-medium mt-6 text-sm tracking-wide uppercase">Abre el mapa. Encuentra tu plan.</p>
                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 4: PROMOCIONES (Izquierda) */}
+                  {/* SECCIÓN 4: PROMOCIONES (Amarillo/Ambar) */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">04</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-                           Promo<span className="text-yellow-500">ciones</span>
+                         <span className="absolute -top-24 text-[10rem] font-black text-yellow-500/10 -z-10 leading-none pointer-events-none">04</span>
+                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
+                           Promo<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500">ciones</span>
                          </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">
+                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-yellow-100">
                             Sube de nivel. Desbloquea perks.
                          </h3>
                          <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
                            Promos, retos y recompensas exclusivas dentro de la noche: de lo básico a lo VIP, según lo que hagas.
                          </p>
-                         <p className="text-white/80 font-medium mt-6 text-sm tracking-wide uppercase">La fiesta también se juega.</p>
+                         <p className="text-yellow-300 font-medium mt-6 text-sm tracking-wide uppercase">La fiesta también se juega.</p>
                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 5: PERFIL (Derecha) */}
+                  {/* SECCIÓN 5: PERFIL (Verde/Esmeralda) */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">05</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter">
-                           Per<span className="text-green-500">fil</span>
+                         <span className="absolute -top-24 text-[10rem] font-black text-emerald-500/10 -z-10 leading-none pointer-events-none">05</span>
+                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
+                           Per<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">fil</span>
                          </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">
+                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-emerald-100">
                             Tu identidad nocturna.
                          </h3>
                          <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
                            Tus eventos, tu actividad, tu estilo y tu historial de noches épicas. Para clubs y para el público.
                          </p>
-                         <p className="text-white/80 font-medium mt-6 text-sm tracking-wide uppercase">Construye tu vibe.</p>
+                         <p className="text-emerald-300 font-medium mt-6 text-sm tracking-wide uppercase">Construye tu vibe.</p>
                       </div>
                     </FadeIn>
                   </section>
@@ -256,16 +256,17 @@ export default function Home() {
                   {/* FOOTER */}
                   <section className="h-screen flex flex-col justify-center items-center text-center px-8">
                     <FadeIn>
-                      <h2 className="text-4xl md:text-6xl font-black mb-8 uppercase tracking-tighter">
+                      <h2 className="text-4xl md:text-6xl font-black mb-8 uppercase tracking-tighter text-white">
                         Ready to join?
                       </h2>
                       <div className="group relative inline-block">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                        {/* Glow del botón también degradado */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                         <button className="relative bg-white text-black px-12 py-4 rounded-full font-bold text-sm tracking-[0.2em] uppercase hover:scale-105 transition-transform">
                           Download App
                         </button>
                       </div>
-                      <p className="mt-12 opacity-30 text-[10px] uppercase tracking-[0.3em]">
+                      <p className="mt-12 opacity-30 text-[10px] uppercase tracking-[0.3em] text-white">
                         © 2024 NightVibe Inc. All rights reserved.
                       </p>
                     </FadeIn>
@@ -280,7 +281,6 @@ export default function Home() {
     </main>
   );
 }
-
 
 /*'use client';
 
