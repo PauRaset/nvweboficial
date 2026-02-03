@@ -118,7 +118,7 @@ export default function Home() {
           <a href="#" className="hover:text-purple-400 transition-colors">Locations</a>
           <a href="#" className="hover:text-purple-400 transition-colors">Membership</a>
         </div>
-        <button className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase hover:scale-105 hover:bg-purple-500 hover:text-white transition-all">
+        <button className="bg-white text-black px-6 py-2 rounded-full text-[10px] font-bold tracking-widest uppercase hover:scale-105 hover:bg-purple-600 hover:text-white transition-all">
           Get App
         </button>
       </nav>
@@ -146,11 +146,15 @@ export default function Home() {
                         <div className="h-[1px] w-12 bg-purple-500"></div>
                         <span className="text-purple-400 font-medium tracking-[0.4em] text-xs uppercase">Est. 2024</span>
                       </div>
-                      {/* Gradient en el título principal para dar efecto neón */}
+                      
+                      {/* TÍTULO PRINCIPAL: Ahora con gradiente fuerte Morado->Rosa y Glow */}
                       <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter uppercase">
                         Night<br/>
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-purple-400">Vibe</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 drop-shadow-[0_0_15px_rgba(192,38,211,0.5)]">
+                          Vibe
+                        </span>
                       </h1>
+                      
                       <p className="mt-8 text-xl font-light max-w-md leading-relaxed tracking-wide opacity-70 text-balance">
                         La ciudad nunca duerme. Tú tampoco deberías.
                       </p>
@@ -161,8 +165,7 @@ export default function Home() {
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                        <div className="relative flex flex-col items-center text-center max-w-md">
-                          {/* Ghost number con color violeta muy sutil */}
-                          <span className="absolute -top-24 text-[10rem] font-black text-purple-500/10 -z-10 leading-none pointer-events-none">01</span>
+                          <span className="absolute -top-24 text-[10rem] font-black text-purple-600/10 -z-10 leading-none pointer-events-none">01</span>
                           <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
                             Event<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">Detail</span>
                           </h2>
@@ -260,7 +263,7 @@ export default function Home() {
                         Ready to join?
                       </h2>
                       <div className="group relative inline-block">
-                        {/* Glow del botón también degradado */}
+                        {/* Glow del botón */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                         <button className="relative bg-white text-black px-12 py-4 rounded-full font-bold text-sm tracking-[0.2em] uppercase hover:scale-105 transition-transform">
                           Download App
