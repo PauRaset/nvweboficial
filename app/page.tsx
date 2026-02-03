@@ -108,7 +108,7 @@ function Iphone() {
 
 export default function Home() {
   return (
-    <main className="w-full h-full bg-[#0b0c15] font-sans">
+    <main className="w-full h-full bg-[#0b0c15] font-sans overflow-x-hidden"> {/* overflow-hidden evita scroll horizontal indeseado */}
       
       {/* NAVBAR */}
       <nav className="fixed top-0 left-0 w-full z-[100] flex justify-between items-center px-8 md:px-12 py-6 text-white" style={{ color: 'white' }}>
@@ -137,10 +137,12 @@ export default function Home() {
               <Iphone />
               
               <Scroll html style={{ width: '100%', height: '100%' }}>
-                <div className="w-screen text-white" style={{ color: 'white' }}>
+                {/* Cambiado w-screen a w-full y añadido max-w-7xl mx-auto para centrar en pantallas gigantes */}
+                <div className="w-full h-full text-white max-w-[1920px] mx-auto" style={{ color: 'white' }}>
                   
-                  {/* SECCIÓN 0: HERO - Más centrado */}
-                  <section className="h-screen flex flex-col justify-center px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 0: HERO */}
+                  {/* pl-8 md:pl-32 lg:pl-60 empuja desde la izquierda hacia el centro */}
+                  <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="flex items-center gap-4 mb-6">
                         <div className="h-[1px] w-12 bg-purple-500"></div>
@@ -155,8 +157,9 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 1: EVENT DETAIL (Derecha - Margen Aumentado) */}
-                  <section className="h-screen flex flex-col justify-center items-end px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 1: EVENT DETAIL (Derecha) */}
+                  {/* pr-8 md:pr-32 lg:pr-64 empuja desde la derecha hacia el centro */}
+                  <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                        <div className="relative flex flex-col items-center text-center max-w-md">
                           <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">01</span>
@@ -174,8 +177,8 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 2: LISTA DE ASISTENTES (Izquierda - Margen Aumentado) */}
-                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 2: LISTA DE ASISTENTES (Izquierda) */}
+                  <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
                          <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">02</span>
@@ -193,8 +196,8 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 3: MAPA (Derecha - Margen Aumentado) */}
-                  <section className="h-screen flex flex-col justify-center items-end px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 3: MAPA (Derecha) */}
+                  <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
                          <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">03</span>
@@ -212,8 +215,8 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 4: PROMOCIONES (Izquierda - Margen Aumentado) */}
-                  <section className="h-screen flex flex-col justify-center items-start px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 4: PROMOCIONES (Izquierda) */}
+                  <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
                          <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">04</span>
@@ -231,8 +234,8 @@ export default function Home() {
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 5: PERFIL (Derecha - Margen Aumentado) */}
-                  <section className="h-screen flex flex-col justify-center items-end px-12 md:px-32 lg:px-64 xl:px-80">
+                  {/* SECCIÓN 5: PERFIL (Derecha) */}
+                  <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
                       <div className="relative flex flex-col items-center text-center max-w-md">
                          <span className="absolute -top-24 text-[10rem] font-black opacity-[0.03] -z-10 leading-none pointer-events-none">05</span>
