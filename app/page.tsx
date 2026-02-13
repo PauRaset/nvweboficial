@@ -139,120 +139,167 @@ export default function Home() {
               <Scroll html style={{ width: '100%', height: '100%' }}>
                 <div className="w-full h-full text-white max-w-[1920px] mx-auto" style={{ color: 'white' }}>
                   
-                  {/* SECCIÓN 0: HERO */}
+                  {/* SECCIÓN 0: HERO (Intacto) */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
                       <div className="flex items-center gap-4 mb-6">
                         <div className="h-[1px] w-12 bg-purple-500"></div>
                         <span className="text-purple-400 font-medium tracking-[0.4em] text-xs uppercase">Est. 2024</span>
                       </div>
-                      
-                      {/* TÍTULO PRINCIPAL: Ahora con gradiente fuerte Morado->Rosa y Glow */}
                       <h1 className="text-[12vw] leading-[0.85] font-black tracking-tighter uppercase">
                         Night<br/>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 drop-shadow-[0_0_15px_rgba(192,38,211,0.5)]">
                           Vibe
                         </span>
                       </h1>
-                      
                       <p className="mt-8 text-xl font-light max-w-md leading-relaxed tracking-wide opacity-70 text-balance">
                         La ciudad nunca duerme. Tú tampoco deberías.
                       </p>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 1: EVENT DETAIL (Violeta/Indigo) */}
+                  {/* SECCIÓN 1: EVENT DETAIL */}
+                  {/* Diseño Editorial: Número Serif Grande + Línea Divisoria + Contenido */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
-                       <div className="relative flex flex-col items-center text-center max-w-md">
-                          <span className="absolute -top-24 text-[10rem] font-black text-purple-600/10 -z-10 leading-none pointer-events-none">01</span>
-                          <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
-                            Event<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">Detail</span>
-                          </h2>
-                          <h3 className="text-xl md:text-2xl font-bold mb-4 text-purple-100">
-                            Todo el evento, en una sola pantalla.
-                          </h3>
-                          <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
-                            Info clara, estética potente y lo que importa: música, hora, lugar, entradas y el ambiente que te espera.
-                          </p>
-                          <p className="text-purple-300 font-medium mt-6 text-sm tracking-wide uppercase">Entra, siente el vibe y decide.</p>
+                       {/* Contenedor Flex para alinear lado a lado en desktop */}
+                       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                          
+                          {/* Columna Izquierda: Etiqueta y Número */}
+                          <div className="flex flex-col items-center md:items-end">
+                            <span className="text-sm font-bold tracking-[0.3em] uppercase mb-0 md:-mb-4 text-purple-400">Event</span>
+                            <span className="text-[8rem] md:text-[10rem] leading-[0.8] font-serif font-medium text-white">01</span>
+                          </div>
+
+                          {/* Línea Divisoria Vertical */}
+                          <div className="hidden md:block w-[1px] h-40 bg-gradient-to-b from-transparent via-purple-500 to-transparent opacity-50"></div>
+                          
+                          {/* Columna Derecha: Texto */}
+                          <div className="text-center md:text-left max-w-sm pt-4">
+                            <h2 className="text-3xl font-bold leading-tight mb-4 text-white">
+                              Todo el evento,<br/>en una sola pantalla.
+                            </h2>
+                            <p className="text-base text-white/60 font-light leading-relaxed mb-6 text-balance">
+                              Info clara, estética potente y lo que importa: música, hora, lugar, entradas y el ambiente que te espera.
+                            </p>
+                            <p className="text-purple-400 text-xs font-bold tracking-[0.2em] uppercase">
+                              Entra, siente el vibe y decide.
+                            </p>
+                          </div>
+
                        </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 2: LISTA DE ASISTENTES (Azul/Cyan) */}
+                  {/* SECCIÓN 2: LISTA DE ASISTENTES */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
-                      <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black text-cyan-500/10 -z-10 leading-none pointer-events-none">02</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
-                           Lista<span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">Guest</span>
-                         </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-cyan-100">
-                            No vas solo: mira quién va.
-                         </h3>
-                         <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
-                           Descubre la gente que ya está dentro, tus amigos y nuevas conexiones antes de llegar a la puerta.
-                         </p>
-                         <p className="text-cyan-300 font-medium mt-6 text-sm tracking-wide uppercase">La noche empieza en la lista.</p>
-                      </div>
+                      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                          
+                          <div className="flex flex-col items-center md:items-end">
+                            <span className="text-sm font-bold tracking-[0.3em] uppercase mb-0 md:-mb-4 text-cyan-400">Guest</span>
+                            <span className="text-[8rem] md:text-[10rem] leading-[0.8] font-serif font-medium text-white">02</span>
+                          </div>
+
+                          <div className="hidden md:block w-[1px] h-40 bg-gradient-to-b from-transparent via-cyan-500 to-transparent opacity-50"></div>
+                          
+                          <div className="text-center md:text-left max-w-sm pt-4">
+                            <h2 className="text-3xl font-bold leading-tight mb-4 text-white">
+                              No vas solo:<br/>mira quién va.
+                            </h2>
+                            <p className="text-base text-white/60 font-light leading-relaxed mb-6 text-balance">
+                              Descubre la gente que ya está dentro, tus amigos y nuevas conexiones antes de llegar a la puerta.
+                            </p>
+                            <p className="text-cyan-400 text-xs font-bold tracking-[0.2em] uppercase">
+                              La noche empieza en la lista.
+                            </p>
+                          </div>
+
+                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 3: MAPA (Rosa/Fucsia) */}
+                  {/* SECCIÓN 3: MAPA */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
-                      <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black text-pink-500/10 -z-10 leading-none pointer-events-none">03</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
-                           Ma<span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-rose-500">pa</span>
-                         </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-pink-100">
-                            Explora la noche en tiempo real.
-                         </h3>
-                         <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
-                           Eventos cerca de ti, filtros por distancia y un mapa interactivo que te enseña dónde está pasando “algo”.
-                         </p>
-                         <p className="text-pink-300 font-medium mt-6 text-sm tracking-wide uppercase">Abre el mapa. Encuentra tu plan.</p>
-                      </div>
+                      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                          
+                          <div className="flex flex-col items-center md:items-end">
+                            <span className="text-sm font-bold tracking-[0.3em] uppercase mb-0 md:-mb-4 text-pink-400">Map</span>
+                            <span className="text-[8rem] md:text-[10rem] leading-[0.8] font-serif font-medium text-white">03</span>
+                          </div>
+
+                          <div className="hidden md:block w-[1px] h-40 bg-gradient-to-b from-transparent via-pink-500 to-transparent opacity-50"></div>
+                          
+                          <div className="text-center md:text-left max-w-sm pt-4">
+                            <h2 className="text-3xl font-bold leading-tight mb-4 text-white">
+                              Explora la noche<br/>en tiempo real.
+                            </h2>
+                            <p className="text-base text-white/60 font-light leading-relaxed mb-6 text-balance">
+                              Eventos cerca de ti, filtros por distancia y un mapa interactivo que te enseña dónde está pasando “algo”.
+                            </p>
+                            <p className="text-pink-400 text-xs font-bold tracking-[0.2em] uppercase">
+                              Abre el mapa. Encuentra tu plan.
+                            </p>
+                          </div>
+
+                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 4: PROMOCIONES (Amarillo/Ambar) */}
+                  {/* SECCIÓN 4: PROMOCIONES */}
                   <section className="h-screen flex flex-col justify-center items-start pl-8 md:pl-32 lg:pl-64 xl:pl-80">
                     <FadeIn>
-                      <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black text-yellow-500/10 -z-10 leading-none pointer-events-none">04</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
-                           Promo<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-500">ciones</span>
-                         </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-yellow-100">
-                            Sube de nivel. Desbloquea perks.
-                         </h3>
-                         <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
-                           Promos, retos y recompensas exclusivas dentro de la noche: de lo básico a lo VIP, según lo que hagas.
-                         </p>
-                         <p className="text-yellow-300 font-medium mt-6 text-sm tracking-wide uppercase">La fiesta también se juega.</p>
-                      </div>
+                      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                          
+                          <div className="flex flex-col items-center md:items-end">
+                            <span className="text-sm font-bold tracking-[0.3em] uppercase mb-0 md:-mb-4 text-yellow-400">Promo</span>
+                            <span className="text-[8rem] md:text-[10rem] leading-[0.8] font-serif font-medium text-white">04</span>
+                          </div>
+
+                          <div className="hidden md:block w-[1px] h-40 bg-gradient-to-b from-transparent via-yellow-500 to-transparent opacity-50"></div>
+                          
+                          <div className="text-center md:text-left max-w-sm pt-4">
+                            <h2 className="text-3xl font-bold leading-tight mb-4 text-white">
+                              Sube de nivel.<br/>Desbloquea perks.
+                            </h2>
+                            <p className="text-base text-white/60 font-light leading-relaxed mb-6 text-balance">
+                              Promos, retos y recompensas exclusivas dentro de la noche: de lo básico a lo VIP, según lo que hagas.
+                            </p>
+                            <p className="text-yellow-400 text-xs font-bold tracking-[0.2em] uppercase">
+                              La fiesta también se juega.
+                            </p>
+                          </div>
+
+                       </div>
                     </FadeIn>
                   </section>
 
-                  {/* SECCIÓN 5: PERFIL (Verde/Esmeralda) */}
+                  {/* SECCIÓN 5: PERFIL */}
                   <section className="h-screen flex flex-col justify-center items-end pr-8 md:pr-32 lg:pr-64 xl:pr-80">
                     <FadeIn>
-                      <div className="relative flex flex-col items-center text-center max-w-md">
-                         <span className="absolute -top-24 text-[10rem] font-black text-emerald-500/10 -z-10 leading-none pointer-events-none">05</span>
-                         <h2 className="text-5xl md:text-7xl font-black mb-6 uppercase tracking-tighter text-white">
-                           Per<span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">fil</span>
-                         </h2>
-                         <h3 className="text-xl md:text-2xl font-bold mb-4 text-emerald-100">
-                            Tu identidad nocturna.
-                         </h3>
-                         <p className="text-lg opacity-60 font-light leading-relaxed text-balance">
-                           Tus eventos, tu actividad, tu estilo y tu historial de noches épicas. Para clubs y para el público.
-                         </p>
-                         <p className="text-emerald-300 font-medium mt-6 text-sm tracking-wide uppercase">Construye tu vibe.</p>
-                      </div>
+                      <div className="flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-12">
+                          
+                          <div className="flex flex-col items-center md:items-end">
+                            <span className="text-sm font-bold tracking-[0.3em] uppercase mb-0 md:-mb-4 text-emerald-400">Profile</span>
+                            <span className="text-[8rem] md:text-[10rem] leading-[0.8] font-serif font-medium text-white">05</span>
+                          </div>
+
+                          <div className="hidden md:block w-[1px] h-40 bg-gradient-to-b from-transparent via-emerald-500 to-transparent opacity-50"></div>
+                          
+                          <div className="text-center md:text-left max-w-sm pt-4">
+                            <h2 className="text-3xl font-bold leading-tight mb-4 text-white">
+                              Tu identidad<br/>nocturna.
+                            </h2>
+                            <p className="text-base text-white/60 font-light leading-relaxed mb-6 text-balance">
+                              Tus eventos, tu actividad, tu estilo y tu historial de noches épicas. Para clubs y para el público.
+                            </p>
+                            <p className="text-emerald-400 text-xs font-bold tracking-[0.2em] uppercase">
+                              Construye tu vibe.
+                            </p>
+                          </div>
+
+                       </div>
                     </FadeIn>
                   </section>
 
@@ -263,7 +310,6 @@ export default function Home() {
                         Ready to join?
                       </h2>
                       <div className="group relative inline-block">
-                        {/* Glow del botón */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full blur opacity-40 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
                         <button className="relative bg-white text-black px-12 py-4 rounded-full font-bold text-sm tracking-[0.2em] uppercase hover:scale-105 transition-transform">
                           Download App
